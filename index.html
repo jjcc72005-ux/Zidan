@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GeoWorld — خريطة العالم التفاعلية</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- Icons (اختياري) -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🌍 GeoWorld — خريطة العالم التفاعلية</h1>
+    <p>اضغط على أي دولة لعرض العلم، الموقع الجغرافي، معلومات أساسية وتصنيف تقديري.</p>
+  </header>
+
+  <main>
+    <aside id="sidebar">
+      <div class="controls">
+        <input id="search" type="search" placeholder="ابحث عن دولة بالاسم..." />
+        <select id="region-filter">
+          <option value="">كل القارات / المناطق</option>
+          <option value="Africa">أفريقيا</option>
+          <option value="Americas">الأمريكيتان</option>
+          <option value="Asia">آسيا</option>
+          <option value="Europe">أوروبا</option>
+          <option value="Oceania">أوقيانوسيا</option>
+          <option value="Polar">القطب</option>
+        </select>
+      </div>
+
+      <div id="list-container">
+        <p class="hint">انتظر تحميل البيانات...</p>
+        <ul id="country-list"></ul>
+      </div>
+    </aside>
+
+    <section id="map-container">
+      <div id="map"></div>
+    </section>
+  </main>
+
+  <!-- نافذة معلومات الدولة -->
+  <div id="country-modal" class="hidden">
+    <div class="modal-card">
+      <button id="close-modal" title="إغلاق">×</button>
+      <img id="modal-flag" alt="علم الدولة" />
+      <h2 id="modal-name"></h2>
+      <p><strong>📍 الموقع الجغرافي (Region / Subregion):</strong> <span id="modal-region"></span></p>
+      <p><strong>🏙️ العاصمة:</strong> <span id="modal-capital"></span></p>
+      <p><strong>👥 السكان:</strong> <span id="modal-population"></span></p>
+      <p><strong>📏 المساحة (كم²):</strong> <span id="modal-area"></span></p>
+      <p><strong>💱 العملة:</strong> <span id="modal-currency"></span></p>
+      <p><strong>📝 اللغات:</strong> <span id="modal-languages"></span></p>
+      <p><strong>📖 نبذة (موجزة):</strong> <span id="modal-note"></span></p>
+      <p><strong>⚖️ التصنيف (تقديري):</strong> <span id="modal-classification"></span></p>
+      <a id="modal-more" target="_blank" rel="noopener">عرض معلومات إضافية (REST Countries)</a>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Script -->
+  <script src="script.js"></script>
+</body>
+</html>
