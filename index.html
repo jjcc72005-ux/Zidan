@@ -4,32 +4,210 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>موقع الجغرافيا العالمي | زيدان</title>
-  <link rel="stylesheet" href="style.css">
-  <script defer src="script.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Cairo", sans-serif;
+      background: #0b132b;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    header {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 20px;
+      border-radius: 12px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      margin: 0 0 10px 0;
+      color: #00d1ff;
+    }
+
+    #searchBox {
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      width: 200px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    #infoBox {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 280px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
+      padding: 15px;
+      display: none;
+    }
+
+    #infoBox img {
+      width: 60px;
+      height: auto;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    #infoBox h2 {
+      margin: 5px 0;
+      color: #00ffcc;
+    }
+
+    #globeCanvas {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  </style>
 </head>
 <body>
   <header>
     <h1>🌍 موقع الجغرافيا العالمي</h1>
-    <input type="text" id="searchBox" placeholder="ابحث عن دولة..." />
-    <button id="toggleMode">تبديل الوضع (نهار / ليل)</button>
+    <input type="text" id="searchBox" placeholder="ابحث عن دولة...">
   </header>
 
-  <main>
-    <div id="globe-container">
-      <canvas id="earthCanvas"></canvas>
-    </div>
+  <canvas id="globeCanvas"></canvas>
 
-    <section id="countryInfo" class="hidden">
-      <h2 id="countryName"></h2>
-      <img id="countryFlag" src="" alt="علم الدولة">
-      <p id="countryRegion"></p>
-      <p id="countryPower"></p>
-      <p id="countryHistory"></p>
-    </section>
-  </main>
+  <div id="infoBox">
+    <img id="countryFlag" src="" alt="علم الدولة">
+    <h2 id="countryName"></h2>
+    <p id="countryContinent"></p>
+    <p id="countryLocation"></p>
+    <p id="countryPower"></p>
+    <p id="countryHistory"></p>
+  </div>
 
-  <footer>
-    <p>تم التطوير بواسطة <strong>زيدان</strong> © 2025</p>
-  </footer>
+  <footer>تم التطوير بواسطة <strong>زيدان</strong> © 2025</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three-globe@2.30.0"></script>
+  <script>
+    const countriesData = [
+      {
+        name: "مصر",
+        flag: "https://flagcdn.com/w80/eg.png",
+        continent: "أفريقيا",
+        location: "شمال شرق أفريقيا",
+        power: "قوة إقليمية مؤثرة",
+        history: "حضارة الفراعنة، من أقدم حضارات العالم."
+      },
+      {
+        name: "السعودية",
+        flag: "https://flagcdn.com/w80/sa.png",
+        continent: "آسيا",
+        location: "شبه الجزيرة العربية",
+        power: "قوة اقتصادية وسياسية في الشرق الأوسط",
+        history: "تأسست المملكة عام 1932 على يد الملك عبدالعزيز."
+      },
+      {
+        name: "اليابان",
+        flag: "https://flagcdn.com/w80/jp.png",
+        continent: "آسيا",
+        location: "شرق آسيا",
+        power: "قوة صناعية وتكنولوجية كبرى",
+        history: "بلد الساموراي والتطور التكنولوجي."
+      },
+      {
+        name: "الولايات المتحدة",
+        flag: "https://flagcdn.com/w80/us.png",
+        continent: "أمريكا الشمالية",
+        location: "بين كندا والمكسيك",
+        power: "القوة العظمى الأولى في العالم",
+        history: "استقلت عام 1776 وأصبحت مركزًا عالميًا للعلوم."
+      },
+      {
+        name: "فرنسا",
+        flag: "https://flagcdn.com/w80/fr.png",
+        continent: "أوروبا",
+        location: "غرب أوروبا",
+        power: "دولة قوية سياسيًا وثقافيًا",
+        history: "الثورة الفرنسية عام 1789 غيرت أوروبا."
+      },
+      {
+        name: "البرازيل",
+        flag: "https://flagcdn.com/w80/br.png",
+        continent: "أمريكا الجنوبية",
+        location: "شرق أمريكا الجنوبية",
+        power: "أكبر اقتصاد في أمريكا الجنوبية",
+        history: "نالت استقلالها عام 1822 عن البرتغال."
+      }
+    ];
+
+    // إعداد الكوكب
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globeCanvas'), antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 250;
+
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(light);
+
+    const globe = new ThreeGlobe()
+      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png');
+
+    scene.add(globe);
+
+    const controls = new THREE.TrackballControls(camera, renderer.domElement);
+    controls.minDistance = 150;
+    controls.maxDistance = 400;
+
+    function animate() {
+      globe.rotation.y += 0.0015;
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // عند البحث
+    const searchBox = document.getElementById('searchBox');
+    const infoBox = document.getElementById('infoBox');
+
+    searchBox.addEventListener('input', e => {
+      const query = e.target.value.trim();
+      if (query === '') {
+        infoBox.style.display = 'none';
+        return;
+      }
+      const country = countriesData.find(c => c.name.includes(query));
+      if (country) showCountryInfo(country);
+      else infoBox.style.display = 'none';
+    });
+
+    function showCountryInfo(country) {
+      document.getElementById('countryFlag').src = country.flag;
+      document.getElementById('countryName').textContent = country.name;
+      document.getElementById('countryContinent').textContent = `🌐 القارة: ${country.continent}`;
+      document.getElementById('countryLocation').textContent = `📍 الموقع: ${country.location}`;
+      document.getElementById('countryPower').textContent = `💪 القوة: ${country.power}`;
+      document.getElementById('countryHistory').textContent = `📖 التاريخ: ${country.history}`;
+      infoBox.style.display = 'block';
+    }
+
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+  </script>
 </body>
 </html>
