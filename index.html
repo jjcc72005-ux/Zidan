@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GeoWorld | كوكب الأرض التفاعلي</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three-globe@2.30.0/dist/three-globe.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>موقع الجغرافيا العالمي | زيدان</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
 </head>
 <body>
   <header>
-    <h1>🌍 GeoWorld - موسوعة كوكب الأرض التفاعلية</h1>
-    <input type="text" id="search" placeholder="🔍 ابحث عن دولة..." />
-    <button id="mode-toggle">🌙 وضع الليل</button>
+    <h1>🌍 موقع الجغرافيا العالمي</h1>
+    <input type="text" id="searchBox" placeholder="ابحث عن دولة..." />
+    <button id="toggleMode">تبديل الوضع (نهار / ليل)</button>
   </header>
 
-  <div id="globe-container"></div>
+  <main>
+    <div id="globe-container">
+      <canvas id="earthCanvas"></canvas>
+    </div>
 
-  <div id="info-box" class="hidden">
-    <button id="close-info">×</button>
-    <img id="flag" alt="علم الدولة">
-    <h2 id="country-name"></h2>
-    <p><strong>📍 الموقع الجغرافي:</strong> <span id="location"></span></p>
-    <p><strong>🏙️ العاصمة:</strong> <span id="capital"></span></p>
-    <p><strong>👥 السكان:</strong> <span id="population"></span></p>
-    <p><strong>📏 المساحة:</strong> <span id="area"></span></p>
-    <p><strong>💰 العملة:</strong> <span id="currency"></span></p>
-    <p><strong>📖 التاريخ:</strong> <span id="history"></span></p>
-    <p><strong>⚔️ التصنيف:</strong> <span id="power"></span></p>
-  </div>
+    <section id="countryInfo" class="hidden">
+      <h2 id="countryName"></h2>
+      <img id="countryFlag" src="" alt="علم الدولة">
+      <p id="countryRegion"></p>
+      <p id="countryPower"></p>
+      <p id="countryHistory"></p>
+    </section>
+  </main>
 
-  <script src="script.js"></script>
+  <footer>
+    <p>تم التطوير بواسطة <strong>زيدان</strong> © 2025</p>
+  </footer>
 </body>
 </html>
