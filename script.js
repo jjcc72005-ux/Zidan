@@ -1,97 +1,60 @@
-let scene, camera, renderer, globe, currentMode = "day", countriesData;
+// عنصر الكوكب
+const globeContainer = document.getElementById("globe-container");
+const countryInfo = document.getElementById("countryInfo");
+const searchInput = document.getElementById("searchInput");
+const modeButton = document.getElementById("modeToggle");
 
-init();
-animate();
+// إنشاء الكوكب باستخدام Globe.gl
+const world = Globe()
+  .globeImageUrl("//unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
+  .bumpImageUrl("//unpkg.com/three-globe/example/img/earth-topology.png")
+  .backgroundImageUrl("//unpkg.com/three-globe/example/img/night-sky.png")
+  (document.getElementById("earthCanvas"));
 
-// إنشاء الكوكب
-function init() {
-  scene = new THREE.Scene();
-  const bgTexture = new THREE.TextureLoader().load('assets/stars_bg.jpg');
-  scene.background = bgTexture;
-
-  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 250;
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.getElementById("globe-container").appendChild(renderer.domElement);
-
-  // تحميل الخامات (textures)
-  const texture = new THREE.TextureLoader().load('assets/earth_day.jpg');
-  const bumpMap = new THREE.TextureLoader().load('assets/earth_night.jpg');
-
-  globe = new ThreeGlobe()
-    .globeImageUrl('assets/earth_day.jpg')
-    .bumpImageUrl('assets/earth_night.jpg');
-  scene.add(globe);
-
-  const light = new THREE.AmbientLight(0xffffff, 1);
-  scene.add(light);
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+// تحميل بيانات الدول من ملف JSON
+fetch("countries.json")
+  .then(res => res.json())
+  .then(data => {
+    window.countriesData = data;
+    console.log("تم تحميل بيانات الدول بنجاح ✅");
   });
 
-  // تحميل بيانات الدول
-  fetch('countries.json')
-    .then(res => res.json())
-    .then(data => {
-      countriesData = data;
-    });
+// دالة عرض معلومات الدولة
+function showCountryInfo(countryName) {
+  const country = window.countriesData.find(c => c.name.toLowerCase() === countryName.toLowerCase());
+  if (!country) {
+    countryInfo.innerHTML = `<p>لم يتم العثور على الدولة.</p>`;
+    return;
+  }
 
-  // البحث
-  document.getElementById('search').addEventListener('input', e => {
-    const query = e.target.value.trim();
-    if (countriesData && countriesData[query]) {
-      const country = countriesData[query];
-      rotateTo(country.lat, country.lng);
-      showInfo(country, query);
-    }
-  });
-
-  // تبديل الوضع
-  document.getElementById('mode-toggle').addEventListener('click', toggleMode);
-
-  document.getElementById('close-info').addEventListener('click', () => {
-    document.getElementById('info-box').classList.add('hidden');
-  });
+  countryInfo.innerHTML = `
+    <h2>${country.name}</h2>
+    <img src="${country.flag}" alt="علم ${country.name}">
+    <p><b>العاصمة:</b> ${country.capital}</p>
+    <p><b>القارة:</b> ${country.continent}</p>
+    <p><b>الموقع الجغرافي:</b> ${country.location}</p>
+    <p><b>عدد السكان:</b> ${country.population}</p>
+    <p><b>القوة الدولية:</b> ${country.power}</p>
+    <p><b>نبذة تاريخية:</b> ${country.history}</p>
+  `;
+  countryInfo.classList.remove("hidden");
 }
 
-// دوران الكوكب
-function animate() {
-  requestAnimationFrame(animate);
-  globe.rotation.y += 0.0015; // دوران تلقائي ببطء
-  renderer.render(scene, camera);
-}
+// البحث عن دولة
+searchInput.addEventListener("keyup", e => {
+  if (e.key === "Enter") {
+    const query = searchInput.value.trim();
+    if (query) showCountryInfo(query);
+  }
+});
 
-function rotateTo(lat, lng) {
-  const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (lng + 180) * (Math.PI / 180);
-  camera.position.x = 250 * Math.sin(phi) * Math.cos(theta);
-  camera.position.y = 250 * Math.cos(phi);
-  camera.position.z = 250 * Math.sin(phi) * Math.sin(theta);
-  camera.lookAt(scene.position);
-}
-
-function showInfo(country, name) {
-  const info = document.getElementById('info-box');
-  info.classList.remove('hidden');
-  document.getElementById('flag').src = country.flag;
-  document.getElementById('country-name').textContent = name;
-  document.getElementById('location').textContent = country.location;
-  document.getElementById('capital').textContent = country.capital;
-  document.getElementById('population').textContent = country.population;
-  document.getElementById('area').textContent = country.area;
-  document.getElementById('currency').textContent = country.currency;
-  document.getElementById('history').textContent = country.history;
-  document.getElementById('power').textContent = country.power;
-}
-
-function toggleMode() {
-  currentMode = currentMode === "day" ? "night" : "day";
-  const texture = currentMode === "day" ? 'assets/earth_day.jpg' : 'assets/earth_night.jpg';
-  globe.globeImageUrl(texture);
-  document.getElementById('mode-toggle').textContent = currentMode === "day" ? "🌙 وضع الليل" : "🔆 وضع النهار";
-}
+// زر التبديل بين الوضعين
+modeButton.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  const isDark = document.body.classList.contains("dark");
+  world.globeImageUrl(isDark
+    ? "//unpkg.com/three-globe/example/img/earth-night.jpg"
+    : "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+  );
+  modeButton.textContent = isDark ? "☀️ وضع النهار" : "🌙 وضع الليل";
+});
