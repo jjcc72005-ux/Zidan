@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>zidan</title>
+    <title>زيدان - الكرة الأرضية التفاعلية</title>
     <style>
         * {
             margin: 0;
@@ -702,22 +702,27 @@
 
         // تهيئة المشهد ثلاثي الأبعاد
         function init() {
+            // إنشاء المشهد
             scene = new THREE.Scene();
             
+            // إنشاء الكاميرا
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 5;
             
+            // إنشاء العارض
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
             document.getElementById('earth-container').appendChild(renderer.domElement);
             
+            // إضافة عناصر التحكم
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minDistance = 3;
             controls.maxDistance = 10;
             
+            // إضافة الإضاءة
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
             
@@ -725,11 +730,14 @@
             directionalLight.position.set(5, 3, 5);
             scene.add(directionalLight);
             
+            // إنشاء الكرة الأرضية
             createEarth();
             
+            // إعداد Raycaster للكشف عن النقر
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
             
+            // إضافة مستمعي الأحداث
             window.addEventListener('resize', onWindowResize);
             renderer.domElement.addEventListener('click', onCanvasClick);
             
@@ -746,16 +754,32 @@
                 camera.position.z = 5;
             });
             
+            // بدء التقديم
             animate();
         }
         
         function createEarth() {
+            // إنشاء كرة الأرض
             const geometry = new THREE.SphereGeometry(2, 64, 64);
             
+            // استخدام نسيج Earth من مصدر بديل
             const textureLoader = new THREE.TextureLoader();
-            const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
-            const earthBumpMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg');
-            const earthSpecularMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg');
+            
+            // استخدام نسيج Earth من مصدر يعمل
+            const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg', 
+                () => {
+                    console.log('Earth texture loaded successfully');
+                },
+                undefined,
+                (error) => {
+                    console.error('Error loading earth texture:', error);
+                    // استخدام لون أزرق كبديل إذا فشل تحميل النسيج
+                    earth.material.color.set(0x2980b9);
+                }
+            );
+            
+            const earthBumpMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+            const earthSpecularMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
             
             const material = new THREE.MeshPhongMaterial({
                 map: earthTexture,
@@ -769,8 +793,9 @@
             earth = new THREE.Mesh(geometry, material);
             scene.add(earth);
             
+            // إضافة السحب
             const cloudsGeometry = new THREE.SphereGeometry(2.03, 64, 64);
-            const cloudsTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png');
+            const cloudsTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png');
             const cloudsMaterial = new THREE.MeshPhongMaterial({
                 map: cloudsTexture,
                 transparent: true,
@@ -789,33 +814,44 @@
         }
         
         function onCanvasClick(event) {
+            // حساب موضع الماوس في إحداثيات التطبيع (-1 إلى +1)
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             
+            // تحديث Raycaster
             raycaster.setFromCamera(mouse, camera);
             
+            // حساب التقاطعات مع الأرض
             const intersects = raycaster.intersectObject(earth);
             
             if (intersects.length > 0) {
+                // الحصول على نقطة التقاطع
                 const intersectPoint = intersects[0].point;
                 
+                // تحويل نقطة التقاطع إلى إحداثيات كروية
                 const spherical = new THREE.Spherical();
                 spherical.setFromVector3(intersectPoint);
                 
+                // تحويل الإحداثيات الكروية إلى خطوط الطول والعرض
                 const lat = 90 - (spherical.phi * 180) / Math.PI;
                 const lon = ((spherical.theta * 180) / Math.PI + 180) % 360 - 180;
                 
+                // تحديد الدولة بناءً على الإحداثيات (محاكاة)
                 const country = getCountryFromCoords(lat, lon);
                 
                 if (country) {
                     showCountryInfo(country);
-                    highlightCountry(allCountries.find(c => c.name === country));
+                    const countryObj = allCountries.find(c => c.name === country);
+                    highlightCountry(countryObj);
                 }
             }
         }
         
+        // دالة محاكاة لتحديد الدولة بناءً على الإحداثيات
         function getCountryFromCoords(lat, lon) {
-            // محاكاة اختيار دولة عشوائية عند النقر
+            // في التطبيق الحقيقي، سنستخدم بيانات جغرافية دقيقة
+            // هنا نستخدم محاكاة بسيطة
+            
             const countries = allCountries.map(c => c.name);
             const index = Math.floor(Math.random() * countries.length);
             return countries[index];
@@ -824,6 +860,7 @@
         async function showCountryInfo(countryName) {
             const infoPanel = document.getElementById('info-panel');
             
+            // عرض رسالة تحميل
             document.querySelector('.country-name').innerHTML = `${countryName} <span class="loading"></span>`;
             document.querySelector('.official-name').textContent = 'جاري تحميل البيانات...';
             infoPanel.classList.remove('hidden');
@@ -871,6 +908,7 @@
         function animate() {
             requestAnimationFrame(animate);
             
+            // تدوير الأرض ببطء
             if (earth) {
                 earth.rotation.y += 0.001;
             }
