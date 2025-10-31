@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>زيدان - الكرة الأرضية التفاعلية</title>
+    <title>zidan</title>
     <style>
         * {
             margin: 0;
@@ -306,13 +306,25 @@
             50% { opacity: 1; }
         }
         
-        .highlight {
+        .country-label {
             position: absolute;
-            background: rgba(79, 195, 247, 0.3);
-            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 3px;
             pointer-events: none;
-            z-index: 1;
-            transition: all 0.3s ease;
+            z-index: 3;
+            transform: translate(-50%, -50%);
+        }
+        
+        .country-highlight {
+            position: absolute;
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid red;
+            border-radius: 3px;
+            pointer-events: none;
+            z-index: 2;
         }
     </style>
 </head>
@@ -398,6 +410,8 @@
         let raycaster, mouse;
         let countriesCache = {};
         let allCountries = [];
+        let countryLabels = [];
+        let highlightedCountry = null;
 
         // إنشاء النجوم
         function createStars() {
@@ -424,7 +438,7 @@
         // جلب قائمة جميع الدول من API
         async function fetchAllCountries() {
             try {
-                const response = await fetch('https://restcountries.com/v3.1/all');
+                const response = await fetch('https://restcountries.com/v3.1/all?fields=name,translations,cca2,capital,region,subregion,area,population,currencies,languages,flags,latlng');
                 const countries = await response.json();
                 
                 allCountries = countries.map(country => {
@@ -432,31 +446,140 @@
                     return {
                         name: arabicName,
                         englishName: country.name.common,
-                        code: country.cca2
+                        code: country.cca2,
+                        latlng: country.latlng,
+                        capital: country.capital ? country.capital[0] : 'غير معروف',
+                        region: country.region,
+                        subregion: country.subregion,
+                        area: country.area,
+                        population: country.population,
+                        flag: country.flags.png
                     };
                 }).sort((a, b) => a.name.localeCompare(b.name));
                 
                 setupSearch();
+                createCountryLabels();
             } catch (error) {
                 console.error('Error fetching countries:', error);
                 // استخدام بيانات افتراضية في حالة فشل API
-                allCountries = [
-                    { name: 'مصر', englishName: 'Egypt', code: 'EG' },
-                    { name: 'السعودية', englishName: 'Saudi Arabia', code: 'SA' },
-                    { name: 'الولايات المتحدة', englishName: 'United States', code: 'US' },
-                    { name: 'الصين', englishName: 'China', code: 'CN' },
-                    { name: 'البرازيل', englishName: 'Brazil', code: 'BR' },
-                    { name: 'فرنسا', englishName: 'France', code: 'FR' },
-                    { name: 'اليابان', englishName: 'Japan', code: 'JP' },
-                    { name: 'أستراليا', englishName: 'Australia', code: 'AU' }
-                ];
+                allCountries = getDefaultCountries();
                 setupSearch();
+                createCountryLabels();
+            }
+        }
+
+        // بيانات افتراضية للدول
+        function getDefaultCountries() {
+            return [
+                { name: 'مصر', englishName: 'Egypt', code: 'EG', latlng: [26, 30], capital: 'القاهرة', region: 'Africa', subregion: 'Northern Africa', area: 1002450, population: 104258327, flag: 'https://flagcdn.com/w320/eg.png' },
+                { name: 'السعودية', englishName: 'Saudi Arabia', code: 'SA', latlng: [24, 45], capital: 'الرياض', region: 'Asia', subregion: 'Western Asia', area: 2149690, population: 34813867, flag: 'https://flagcdn.com/w320/sa.png' },
+                { name: 'الولايات المتحدة', englishName: 'United States', code: 'US', latlng: [38, -97], capital: 'واشنطن', region: 'Americas', subregion: 'Northern America', area: 9372610, population: 329484123, flag: 'https://flagcdn.com/w320/us.png' },
+                { name: 'الصين', englishName: 'China', code: 'CN', latlng: [35, 105], capital: 'بكين', region: 'Asia', subregion: 'Eastern Asia', area: 9640011, population: 1402112000, flag: 'https://flagcdn.com/w320/cn.png' },
+                { name: 'البرازيل', englishName: 'Brazil', code: 'BR', latlng: [-10, -55], capital: 'برازيليا', region: 'Americas', subregion: 'South America', area: 8515767, population: 212559409, flag: 'https://flagcdn.com/w320/br.png' },
+                { name: 'فرنسا', englishName: 'France', code: 'FR', latlng: [46, 2], capital: 'باريس', region: 'Europe', subregion: 'Western Europe', area: 551695, population: 67391582, flag: 'https://flagcdn.com/w320/fr.png' },
+                { name: 'اليابان', englishName: 'Japan', code: 'JP', latlng: [36, 138], capital: 'طوكيو', region: 'Asia', subregion: 'Eastern Asia', area: 377930, population: 125836021, flag: 'https://flagcdn.com/w320/jp.png' },
+                { name: 'أستراليا', englishName: 'Australia', code: 'AU', latlng: [-27, 133], capital: 'كانبرا', region: 'Oceania', subregion: 'Australia and New Zealand', area: 7692024, population: 25687041, flag: 'https://flagcdn.com/w320/au.png' },
+                { name: 'الهند', englishName: 'India', code: 'IN', latlng: [20, 77], capital: 'نيودلهي', region: 'Asia', subregion: 'Southern Asia', area: 3287590, population: 1380004385, flag: 'https://flagcdn.com/w320/in.png' },
+                { name: 'روسيا', englishName: 'Russia', code: 'RU', latlng: [60, 100], capital: 'موسكو', region: 'Europe', subregion: 'Eastern Europe', area: 17098242, population: 144104080, flag: 'https://flagcdn.com/w320/ru.png' }
+            ];
+        }
+
+        // إنشاء تسميات الدول على الكرة الأرضية
+        function createCountryLabels() {
+            // إزالة التسميات القديمة
+            countryLabels.forEach(label => {
+                if (label.parentNode) {
+                    label.parentNode.removeChild(label);
+                }
+            });
+            countryLabels = [];
+
+            allCountries.forEach(country => {
+                if (country.latlng && country.latlng.length === 2) {
+                    const label = document.createElement('div');
+                    label.className = 'country-label';
+                    label.textContent = country.name;
+                    label.style.display = 'none'; // مخفي بشكل افتراضي
+                    
+                    document.getElementById('container').appendChild(label);
+                    countryLabels.push({
+                        element: label,
+                        country: country,
+                        lat: country.latlng[0],
+                        lon: country.latlng[1]
+                    });
+                }
+            });
+            
+            updateCountryLabels();
+        }
+
+        // تحديث مواقع تسميات الدول
+        function updateCountryLabels() {
+            countryLabels.forEach(item => {
+                const spherical = new THREE.Spherical();
+                spherical.radius = 2.1;
+                spherical.phi = (90 - item.lat) * Math.PI / 180;
+                spherical.theta = (item.lon + 180) * Math.PI / 180;
+                
+                const vector = new THREE.Vector3();
+                vector.setFromSpherical(spherical);
+                
+                vector.project(camera);
+                
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+                
+                // إظهار التسمية فقط إذا كانت في النصف الأمامي من الكرة
+                if (vector.z > 0 && x > 0 && x < window.innerWidth && y > 0 && y < window.innerHeight) {
+                    item.element.style.display = 'block';
+                    item.element.style.left = `${x}px`;
+                    item.element.style.top = `${y}px`;
+                } else {
+                    item.element.style.display = 'none';
+                }
+            });
+        }
+
+        // إبراز دولة محددة
+        function highlightCountry(country) {
+            // إزالة الإبراز السابق
+            if (highlightedCountry) {
+                if (highlightedCountry.parentNode) {
+                    highlightedCountry.parentNode.removeChild(highlightedCountry);
+                }
+            }
+
+            if (country && country.latlng && country.latlng.length === 2) {
+                const highlight = document.createElement('div');
+                highlight.className = 'country-highlight';
+                
+                const spherical = new THREE.Spherical();
+                spherical.radius = 2.05;
+                spherical.phi = (90 - country.latlng[0]) * Math.PI / 180;
+                spherical.theta = (country.latlng[1] + 180) * Math.PI / 180;
+                
+                const vector = new THREE.Vector3();
+                vector.setFromSpherical(spherical);
+                
+                vector.project(camera);
+                
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+                
+                highlight.style.left = `${x - 20}px`;
+                highlight.style.top = `${y - 20}px`;
+                highlight.style.width = '40px';
+                highlight.style.height = '40px';
+                
+                document.getElementById('container').appendChild(highlight);
+                highlightedCountry = highlight;
             }
         }
 
         // جلب بيانات دولة محددة من API
         async function fetchCountryData(countryName) {
-            // البحث عن الاسم الإنجليزي للدولة
+            // البحث عن الدولة
             const country = allCountries.find(c => c.name === countryName);
             if (!country) return null;
 
@@ -466,7 +589,7 @@
             }
 
             try {
-                const response = await fetch(`https://restcountries.com/v3.1/name/${country.englishName}`);
+                const response = await fetch(`https://restcountries.com/v3.1/name/${country.englishName}?fields=name,translations,capital,region,subregion,area,population,currencies,languages,flags`);
                 const data = await response.json();
                 
                 if (data && data[0]) {
@@ -481,7 +604,7 @@
                         location: countryData.subregion || countryData.region,
                         area: countryData.area ? `${countryData.area.toLocaleString()} كم²` : 'غير معروف',
                         population: countryData.population ? `${countryData.population.toLocaleString()} نسمة` : 'غير معروف',
-                        government: 'غير معروف', // API لا يوفر هذه المعلومة مباشرة
+                        government: 'غير معروف',
                         currency: countryData.currencies ? Object.values(countryData.currencies)[0].name : 'غير معروف',
                         language: countryData.languages ? Object.values(countryData.languages).join(', ') : 'غير معروف',
                         history: 'معلومات تاريخية غير متوفرة في الوقت الحالي',
@@ -496,24 +619,38 @@
                 console.error('Error fetching country data:', error);
             }
             
-            return null;
+            // استخدام البيانات الأساسية إذا فشل API
+            const basicData = {
+                officialName: country.name,
+                flag: country.flag,
+                capital: country.capital,
+                continent: country.region,
+                location: country.subregion || country.region,
+                area: country.area ? `${country.area.toLocaleString()} كم²` : 'غير معروف',
+                population: country.population ? `${country.population.toLocaleString()} نسمة` : 'غير معروف',
+                government: 'غير معروف',
+                currency: 'غير معروف',
+                language: 'غير معروف',
+                history: 'معلومات تاريخية غير متوفرة في الوقت الحالي',
+                power: calculateCountryPower(country)
+            };
+            
+            countriesCache[country.englishName] = basicData;
+            return basicData;
         }
 
-        // حساب قوة الدولة (محاكاة)
+        // حساب قوة الدولة
         function calculateCountryPower(countryData) {
-            let power = 50; // أساسي
+            let power = 50;
             
-            // إضافة نقاط بناءً على عدد السكان
             if (countryData.population > 100000000) power += 20;
             else if (countryData.population > 50000000) power += 15;
             else if (countryData.population > 10000000) power += 10;
             
-            // إضافة نقاط بناءً على المساحة
             if (countryData.area > 5000000) power += 15;
             else if (countryData.area > 1000000) power += 10;
             else if (countryData.area > 500000) power += 5;
             
-            // إضافة نقاط بناءً على التطور الاقتصادي (محاكاة)
             if (countryData.region === 'Europe' || countryData.region === 'North America') power += 10;
             
             return Math.min(power, 100);
@@ -544,6 +681,7 @@
                         resultElement.textContent = country.name;
                         resultElement.addEventListener('click', () => {
                             showCountryInfo(country.name);
+                            highlightCountry(country);
                             searchResults.style.display = 'none';
                             searchBox.value = '';
                         });
@@ -555,7 +693,6 @@
                 }
             });
             
-            // إغلاق نتائج البحث عند النقر خارجها
             document.addEventListener('click', function(e) {
                 if (!searchBox.contains(e.target) && !searchResults.contains(e.target)) {
                     searchResults.style.display = 'none';
@@ -565,27 +702,22 @@
 
         // تهيئة المشهد ثلاثي الأبعاد
         function init() {
-            // إنشاء المشهد
             scene = new THREE.Scene();
             
-            // إنشاء الكاميرا
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 5;
             
-            // إنشاء العارض
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
             document.getElementById('earth-container').appendChild(renderer.domElement);
             
-            // إضافة عناصر التحكم
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minDistance = 3;
             controls.maxDistance = 10;
             
-            // إضافة الإضاءة
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
             
@@ -593,14 +725,11 @@
             directionalLight.position.set(5, 3, 5);
             scene.add(directionalLight);
             
-            // إنشاء الكرة الأرضية
             createEarth();
             
-            // إعداد Raycaster للكشف عن النقر
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
             
-            // إضافة مستمعي الأحداث
             window.addEventListener('resize', onWindowResize);
             renderer.domElement.addEventListener('click', onCanvasClick);
             
@@ -617,15 +746,12 @@
                 camera.position.z = 5;
             });
             
-            // بدء التقديم
             animate();
         }
         
         function createEarth() {
-            // إنشاء كرة الأرض
             const geometry = new THREE.SphereGeometry(2, 64, 64);
             
-            // إنشاء نسيج الأرض
             const textureLoader = new THREE.TextureLoader();
             const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
             const earthBumpMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg');
@@ -643,7 +769,6 @@
             earth = new THREE.Mesh(geometry, material);
             scene.add(earth);
             
-            // إضافة السحب
             const cloudsGeometry = new THREE.SphereGeometry(2.03, 64, 64);
             const cloudsTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png');
             const cloudsMaterial = new THREE.MeshPhongMaterial({
@@ -660,45 +785,37 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            updateCountryLabels();
         }
         
         function onCanvasClick(event) {
-            // حساب موضع الماوس في إحداثيات التطبيع (-1 إلى +1)
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             
-            // تحديث Raycaster
             raycaster.setFromCamera(mouse, camera);
             
-            // حساب التقاطعات مع الأرض
             const intersects = raycaster.intersectObject(earth);
             
             if (intersects.length > 0) {
-                // الحصول على نقطة التقاطع
                 const intersectPoint = intersects[0].point;
                 
-                // تحويل نقطة التقاطع إلى إحداثيات كروية
                 const spherical = new THREE.Spherical();
                 spherical.setFromVector3(intersectPoint);
                 
-                // تحويل الإحداثيات الكروية إلى خطوط الطول والعرض
                 const lat = 90 - (spherical.phi * 180) / Math.PI;
                 const lon = ((spherical.theta * 180) / Math.PI + 180) % 360 - 180;
                 
-                // تحديد الدولة بناءً على الإحداثيات (محاكاة)
                 const country = getCountryFromCoords(lat, lon);
                 
                 if (country) {
                     showCountryInfo(country);
+                    highlightCountry(allCountries.find(c => c.name === country));
                 }
             }
         }
         
-        // دالة محاكاة لتحديد الدولة بناءً على الإحداثيات
         function getCountryFromCoords(lat, lon) {
-            // في التطبيق الحقيقي، سنستخدم بيانات جغرافية دقيقة
-            // هنا نستخدم محاكاة بسيطة
-            
+            // محاكاة اختيار دولة عشوائية عند النقر
             const countries = allCountries.map(c => c.name);
             const index = Math.floor(Math.random() * countries.length);
             return countries[index];
@@ -707,7 +824,6 @@
         async function showCountryInfo(countryName) {
             const infoPanel = document.getElementById('info-panel');
             
-            // عرض رسالة تحميل
             document.querySelector('.country-name').innerHTML = `${countryName} <span class="loading"></span>`;
             document.querySelector('.official-name').textContent = 'جاري تحميل البيانات...';
             infoPanel.classList.remove('hidden');
@@ -755,12 +871,12 @@
         function animate() {
             requestAnimationFrame(animate);
             
-            // تدوير الأرض ببطء
             if (earth) {
                 earth.rotation.y += 0.001;
             }
             
             controls.update();
+            updateCountryLabels();
             renderer.render(scene, camera);
         }
         
