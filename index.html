@@ -12,30 +12,23 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <!-- Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
       --bg:#0b0f14;
       --panel:#11161a;
       --accent:#2bd4c8;
-      --accent-dark:#1fa89e;
       --muted:#9aa6ad;
       --card:#172026;
-      --text:#e7f6f4;
-      --shadow: 0 8px 30px rgba(0,0,0,0.4);
-      --success: #4CAF50;
-      --warning: #FF9800;
-      --danger: #F44336;
     }
 
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:"Cairo",sans-serif;
-      background:linear-gradient(135deg, #071014 0%, #0b1216 100%);
-      color:var(--text);
+      background:linear-gradient(180deg,#071014 0%, #0b1216 100%);
+      color:#e7f6f4;
       height:100vh;
       display:flex;
       flex-direction:column;
@@ -43,763 +36,89 @@
     }
 
     header{
-      padding:16px 24px;
-      background:rgba(11, 15, 20, 0.85);
-      border-bottom:1px solid rgba(255,255,255,0.05);
-      flex-shrink: 0;
-      box-shadow: var(--shadow);
-      z-index: 10;
-      backdrop-filter: blur(10px);
+      padding:12px 18px;
+      background:rgba(0,0,0,0.25);
+      border-bottom:1px solid rgba(255,255,255,0.03);
     }
-    .header-content {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo-icon {
-      font-size: 28px;
-    }
-    .logo-text h1{
-      margin:0;
-      font-size:20px;
-      font-weight: 700;
-    }
-    .logo-text p{
-      margin:4px 0 0;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .header-controls {
-      display: flex;
-      gap: 12px;
-    }
-    .header-btn {
-      background: rgba(43, 212, 200, 0.1);
-      border: 1px solid rgba(43, 212, 200, 0.2);
-      color: var(--accent);
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .header-btn:hover {
-      background: rgba(43, 212, 200, 0.2);
-      transform: translateY(-2px);
-    }
-    .header-btn.active {
-      background: rgba(43, 212, 200, 0.3);
-      border-color: var(--accent);
-    }
+    header h1{margin:0;font-size:18px}
+    header p{margin:4px 0 0;color:var(--muted);font-size:13px}
 
     main{
       display:flex;
-      gap:16px;
-      height:calc(100vh - 80px);
-      padding:16px;
-      flex: 1;
-      min-height: 0;
-      max-width: 1400px;
-      margin: 0 auto;
-      width: 100%;
+      gap:10px;
+      height:calc(100vh - 74px);
+      padding:10px;
     }
 
     /* Sidebar */
     #sidebar{
-      width:340px;
+      width:320px;
       background:var(--panel);
-      border-radius:16px;
-      padding:16px;
-      box-shadow: var(--shadow);
+      border-radius:12px;
+      padding:12px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.5);
       overflow:auto;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid rgba(255,255,255,0.03);
-      transition: transform 0.3s ease;
     }
-    .sidebar-header {
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-    .sidebar-header h2 {
-      margin: 0 0 8px 0;
-      font-size: 18px;
-      font-weight: 600;
-    }
-    .sidebar-header p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .sidebar-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .sidebar-action-btn {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text);
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s ease;
-    }
-    .sidebar-action-btn:hover {
-      background: rgba(43, 212, 200, 0.2);
-      border-color: var(--accent);
-    }
-    .controls{display:flex;gap:10px;margin-bottom:16px}
+    .controls{display:flex;gap:8px;margin-bottom:8px}
     #search{
-      flex:1;
-      padding:12px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,0.06);
-      background:rgba(0,0,0,0.2);
-      color:inherit;
-      font-family: inherit;
-      transition: all 0.3s ease;
+      flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);
+      background:transparent;color:inherit;
     }
-    #search:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(43, 212, 200, 0.1);
-    }
-    #region-filter{
-      padding:12px;
-      border-radius:10px;
-      background:rgba(0,0,0,0.2);
-      border:1px solid rgba(255,255,255,0.06);
-      color:inherit;
-      font-family: inherit;
-      cursor: pointer;
-    }
+    #region-filter{padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
 
-    #list-container{
-      flex: 1;
-      overflow:auto;
-      border-radius: 10px;
-    }
-    #country-list{
-      list-style:none;
-      padding:0;
-      margin:0;
-    }
+    #list-container{max-height:calc(100% - 60px);overflow:auto}
+    #country-list{list-style:none;padding:0;margin:0}
     #country-list li{
-      padding:12px;
-      border-radius:10px;
-      margin-bottom:8px;
-      background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
-      display:flex;
-      align-items:center;
-      gap:12px;
-      cursor:pointer;
-      border:1px solid rgba(255,255,255,0.03);
-      transition: all 0.2s ease;
-      position: relative;
+      padding:8px;border-radius:8px;margin-bottom:6px;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+      display:flex;align-items:center;gap:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.02);
     }
-    #country-list li:hover {
-      background: rgba(43, 212, 200, 0.1);
-      border-color: rgba(43, 212, 200, 0.2);
-      transform: translateY(-2px);
-    }
-    #country-list li.active {
-      background: rgba(43, 212, 200, 0.15);
-      border-color: var(--accent);
-    }
-    .country-flag-thumb{
-      width:40px;
-      height:26px;
-      border-radius:5px;
-      object-fit:cover;
-      border:1px solid rgba(0,0,0,0.3);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .country-fav-btn {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .country-fav-btn:hover {
-      color: var(--warning);
-    }
-    .country-fav-btn.favorited {
-      color: var(--warning);
-    }
+    .country-flag-thumb{width:36px;height:24px;border-radius:4px;object-fit:cover;border:1px solid rgba(0,0,0,0.4)}
 
     /* Globe */
-    #globe-container{
-      flex:1;
-      border-radius:16px;
-      overflow:hidden;
-      position:relative;
-      min-width: 0;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255,255,255,0.03);
-    }
-    #globe{
-      height:100%;
-      width:100%;
-      background: #071014;
-    }
+    #globe-container{flex:1;border-radius:12px;overflow:hidden;position:relative}
+    #globe{height:100%;width:100%}
     #globe-info {
       position: absolute;
-      bottom: 16px;
-      left: 16px;
+      bottom: 10px;
+      left: 10px;
       background: rgba(0,0,0,0.7);
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
       color: var(--muted);
-      z-index: 10;
-      backdrop-filter: blur(5px);
-      transition: opacity 0.3s ease;
-    }
-    .globe-controls {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      display: flex;
-      gap: 8px;
-      z-index: 10;
-    }
-    .globe-btn {
-      background: rgba(0,0,0,0.6);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text);
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 18px;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(5px);
-    }
-    .globe-btn:hover {
-      background: rgba(43, 212, 200, 0.2);
-      border-color: var(--accent);
-      transform: scale(1.1);
-    }
-    .globe-btn.active {
-      background: rgba(43, 212, 200, 0.3);
-      border-color: var(--accent);
     }
 
     /* Modal */
     #country-modal.hidden{display:none}
     #country-modal{
-      position:fixed;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:9999;
-      background: rgba(2,6,8,0.8);
-      backdrop-filter: blur(5px);
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999;
+      background:linear-gradient(180deg, rgba(2,6,8,0.6), rgba(2,6,8,0.6));
     }
     .modal-card{
-      width:420px;
-      background:var(--card);
-      padding:20px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,0.05);
-      box-shadow:0 20px 60px rgba(0,0,0,0.6);
-      position:relative;
-      text-align:right;
-      max-height: 90vh;
-      overflow-y: auto;
+      width:380px;background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
+      box-shadow:0 12px 40px rgba(0,0,0,0.6);position:relative;text-align:right;
     }
-    #close-modal{
-      position:absolute;
-      left:16px;
-      top:16px;
-      background:#ff5f5f;
-      border:0;
-      color:white;
-      border-radius:50%;
-      width:36px;
-      height:36px;
-      font-size:20px;
-      cursor:pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #close-modal:hover {
-      background: #ff3b3b;
-      transform: scale(1.1);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .modal-fav-btn {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 20px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .modal-fav-btn:hover {
-      color: var(--warning);
-    }
-    .modal-fav-btn.favorited {
-      color: var(--warning);
-    }
-    #modal-flag{
-      width:100%;
-      height:180px;
-      object-fit:cover;
-      border-radius:10px;
-      margin-bottom:16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    .modal-card h2{
-      margin:0 0 12px 0;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--accent);
-    }
-    .modal-card p{
-      margin:8px 0;
-      color:var(--muted);
-      font-size:14px;
-      line-height: 1.5;
-    }
-    .modal-card strong {
-      color: var(--text);
-    }
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-    }
-    #modal-more{
-      display:inline-block;
-      padding:10px 16px;
-      border-radius:10px;
-      background:var(--accent);
-      color:#012;
-      text-decoration:none;
-      font-weight:600;
-      text-align: center;
-      transition: all 0.3s ease;
-      flex: 1;
-    }
-    #modal-more:hover {
-      background: var(--accent-dark);
-      transform: translateY(-2px);
-    }
-    #modal-compare {
-      display:inline-block;
-      padding:10px 16px;
-      border-radius:10px;
-      background:rgba(255,255,255,0.1);
-      color:var(--text);
-      text-decoration:none;
-      font-weight:600;
-      text-align: center;
-      transition: all 0.3s ease;
-      flex: 1;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    #modal-compare:hover {
-      background: rgba(255,255,255,0.2);
-      transform: translateY(-2px);
-    }
-
-    /* تنسيق أسماء الدول على الكرة الأرضية */
-    .country-label {
-      position: absolute;
-      color: white;
-      font-family: 'Cairo', sans-serif;
-      font-size: 12px;
-      font-weight: 500;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-      pointer-events: none;
-      white-space: nowrap;
-      transition: all 0.3s ease;
-      z-index: 5;
-      background: rgba(0,0,0,0.5);
-      padding: 2px 6px;
-      border-radius: 4px;
-      backdrop-filter: blur(2px);
-    }
-    
-    .country-label.highlight {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 14px;
-      text-shadow: 0 0 10px rgba(43, 212, 200, 0.8);
-      background: rgba(0,0,0,0.7);
-      transform: scale(1.1);
-    }
-    
-    /* زر القائمة المتنقلة للشاشات الصغيرة */
-    #mobile-menu-toggle {
-      display: none;
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: var(--accent);
-      border: none;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      color: #012;
-      font-size: 20px;
-      cursor: pointer;
-      z-index: 100;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-    }
-    
-    #mobile-menu-toggle:hover {
-      background: var(--accent-dark);
-      transform: scale(1.1);
-    }
-    
-    @media (max-width: 900px) {
-      #mobile-menu-toggle {
-        display: block;
-      }
-      
-      #sidebar.hidden-mobile {
-        transform: translateX(100%);
-      }
-    }
-
-    /* مؤشر التحميل */
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-      flex-direction: column;
-      gap: 16px;
-    }
-    
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(43, 212, 200, 0.2);
-      border-left: 4px solid var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* شريط التقدم */
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 2px;
-      overflow: hidden;
-      margin: 8px 0;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      transition: width 0.3s ease;
-    }
-
-    /* إشعارات */
-    .notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 12px 16px;
-      box-shadow: var(--shadow);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      max-width: 300px;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-    
-    .notification.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    
-    .notification-icon {
-      font-size: 18px;
-    }
-    
-    .notification.success .notification-icon {
-      color: var(--success);
-    }
-    
-    .notification.warning .notification-icon {
-      color: var(--warning);
-    }
-    
-    .notification.error .notification-icon {
-      color: var(--danger);
-    }
-    
-    .notification-content {
-      flex: 1;
-    }
-    
-    .notification-title {
-      font-weight: 600;
-      margin: 0 0 4px 0;
-      font-size: 14px;
-    }
-    
-    .notification-message {
-      margin: 0;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    
-    .notification-close {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    /* علامات التبويب */
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    
-    .tab {
-      padding: 8px 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 14px;
-      flex: 1;
-      text-align: center;
-    }
-    
-    .tab.active {
-      background: rgba(43, 212, 200, 0.2);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    
-    .tab-content {
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-
-    /* تحسينات التمرير */
-    #list-container::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    #list-container::-webkit-scrollbar-track {
-      background: rgba(255,255,255,0.05);
-      border-radius: 3px;
-    }
-    
-    #list-container::-webkit-scrollbar-thumb {
-      background: rgba(43, 212, 200, 0.3);
-      border-radius: 3px;
-    }
-    
-    #list-container::-webkit-scrollbar-thumb:hover {
-      background: rgba(43, 212, 200, 0.5);
-    }
+    #close-modal{position:absolute;left:12px;top:12px;background:#ff5f5f;border:0;color:white;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer}
+    #modal-flag{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:10px}
+    .modal-card h2{margin:0 0 8px 0}
+    .modal-card p{margin:6px 0;color:var(--muted);font-size:14px}
+    #modal-more{display:inline-block;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--accent);color:#012; text-decoration:none;font-weight:600}
 
     /* Responsive */
-    @media (max-width: 1200px) {
-      main {
-        gap: 12px;
-        padding: 12px;
-      }
-      
-      #sidebar {
-        width: 300px;
-      }
-    }
-    
-    @media (max-width: 900px){
-      .header-content {
-        flex-direction: column;
-        gap: 12px;
-        text-align: center;
-      }
-      
-      main {
-        flex-direction: column;
-        height: auto;
-        gap: 12px;
-      }
-      
-      #sidebar {
-        width: 100%;
-        max-height: 40vh;
-        position: absolute;
-        right: 0;
-        top: 0;
-        height: 100%;
-        z-index: 99;
-        transform: translateX(0);
-      }
-      
-      #globe-container {
-        min-height: 50vh;
-      }
-    }
-    
-    @media (max-width: 600px){
-      header {
-        padding: 12px 16px;
-      }
-      
-      .logo-text h1 {
-        font-size: 18px;
-      }
-      
-      .logo-text p {
-        font-size: 12px;
-      }
-      
-      .header-btn {
-        padding: 6px 12px;
-        font-size: 13px;
-      }
-      
-      main {
-        padding: 10px;
-        gap: 10px;
-      }
-      
-      .modal-card {
-        width: 95%;
-        padding: 16px;
-        margin: 10px;
-      }
-      
-      .controls {
-        flex-direction: column;
-      }
-    }
-    
-    @media (max-width: 400px){
-      main {
-        padding: 8px;
-      }
-      
-      #sidebar {
-        padding: 12px;
-      }
-      
-      #country-list li {
-        padding: 10px;
-      }
+    @media (max-width:900px){
+      #sidebar{display:none}
+      .modal-card{width:92%}
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="header-content">
-      <div class="logo">
-        <div class="logo-icon">🌍</div>
-        <div class="logo-text">
-          <h1>GeoWorld — خريطة العالم التفاعلية</h1>
-          <p>استكشف العالم بضغطة زر - اضغط على أي دولة لعرض معلوماتها</p>
-        </div>
-      </div>
-      <div class="header-controls">
-        <button class="header-btn" id="reset-view">
-          <i class="fas fa-sync-alt"></i>
-          إعادة تعيين العرض
-        </button>
-        <button class="header-btn" id="toggle-labels">
-          <i class="fas fa-tag"></i>
-          إظهار/إخفاء الأسماء
-        </button>
-        <button class="header-btn" id="toggle-favorites">
-          <i class="fas fa-star"></i>
-          المفضلة
-        </button>
-      </div>
-    </div>
+    <h1>🌍 GeoWorld — خريطة العالم التفاعلية ثلاثية الأبعاد</h1>
+    <p>اضغط على أي دولة لعرض العلم، الموقع الجغرافي، معلومات أساسية وتصنيف تقديري.</p>
   </header>
 
   <main>
-    <button id="mobile-menu-toggle">☰</button>
-    
     <aside id="sidebar">
-      <div class="sidebar-header">
-        <div>
-          <h2>قائمة الدول</h2>
-          <p>ابحث عن دولة أو قم بتصفية النتائج حسب المنطقة</p>
-        </div>
-        <div class="sidebar-actions">
-          <button class="sidebar-action-btn" id="toggle-favorites-view" title="عرض المفضلة فقط">
-            <i class="fas fa-star"></i>
-          </button>
-          <button class="sidebar-action-btn" id="clear-filters" title="مسح الفلاتر">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-      
-      <div class="tabs">
-        <div class="tab active" data-tab="all">جميع الدول</div>
-        <div class="tab" data-tab="favorites">المفضلة</div>
-      </div>
-
       <div class="controls">
         <input id="search" type="search" placeholder="ابحث عن دولة بالاسم..." />
         <select id="region-filter">
@@ -813,35 +132,13 @@
         </select>
       </div>
 
-      <div class="progress-bar">
-        <div class="progress-fill" id="loading-progress" style="width: 0%"></div>
-      </div>
-
       <div id="list-container">
-        <div class="loading">
-          <div class="spinner"></div>
-          <p>جاري تحميل بيانات الدول...</p>
-        </div>
-        <ul id="country-list" style="display: none;"></ul>
-        <div id="favorite-countries" style="display: none;"></div>
+        <p class="hint">انتظر تحميل البيانات...</p>
+        <ul id="country-list"></ul>
       </div>
     </aside>
 
     <section id="globe-container">
-      <div class="globe-controls">
-        <button class="globe-btn" id="zoom-in" title="تكبير">
-          <i class="fas fa-search-plus"></i>
-        </button>
-        <button class="globe-btn" id="zoom-out" title="تصغير">
-          <i class="fas fa-search-minus"></i>
-        </button>
-        <button class="globe-btn" id="reset-rotation" title="إعادة التدوير">
-          <i class="fas fa-redo"></i>
-        </button>
-        <button class="globe-btn" id="toggle-auto-rotate" title="التدوير التلقائي">
-          <i class="fas fa-sync"></i>
-        </button>
-      </div>
       <div id="globe"></div>
       <div id="globe-info">استخدم الماوس للتحكم في الكرة الأرضية: تدوير، تكبير/تصغير</div>
     </section>
@@ -851,40 +148,18 @@
   <div id="country-modal" class="hidden">
     <div class="modal-card">
       <button id="close-modal" title="إغلاق">×</button>
-      <div class="modal-header">
-        <h2 id="modal-name"></h2>
-        <button class="modal-fav-btn" id="modal-favorite" title="إضافة إلى المفضلة">
-          <i class="far fa-star"></i>
-        </button>
-      </div>
       <img id="modal-flag" alt="علم الدولة" />
-      <p><strong>📍 الموقع الجغرافي:</strong> <span id="modal-region"></span></p>
+      <h2 id="modal-name"></h2>
+      <p><strong>📍 الموقع الجغرافي (Region / Subregion):</strong> <span id="modal-region"></span></p>
       <p><strong>🏙️ العاصمة:</strong> <span id="modal-capital"></span></p>
       <p><strong>👥 السكان:</strong> <span id="modal-population"></span></p>
       <p><strong>📏 المساحة (كم²):</strong> <span id="modal-area"></span></p>
       <p><strong>💱 العملة:</strong> <span id="modal-currency"></span></p>
       <p><strong>📝 اللغات:</strong> <span id="modal-languages"></span></p>
-      <p><strong>📖 نبذة موجزة:</strong> <span id="modal-note"></span></p>
+      <p><strong>📖 نبذة (موجزة):</strong> <span id="modal-note"></span></p>
       <p><strong>⚖️ التصنيف (تقديري):</strong> <span id="modal-classification"></span></p>
-      <div class="modal-actions">
-        <a id="modal-more" target="_blank" rel="noopener">عرض معلومات إضافية</a>
-        <button id="modal-compare">مقارنة</button>
-      </div>
+      <a id="modal-more" target="_blank" rel="noopener">عرض معلومات إضافية (REST Countries)</a>
     </div>
-  </div>
-
-  <!-- إشعارات -->
-  <div class="notification" id="notification">
-    <div class="notification-icon">
-      <i class="fas fa-info-circle"></i>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title" id="notification-title"></div>
-      <div class="notification-message" id="notification-message"></div>
-    </div>
-    <button class="notification-close" id="notification-close">
-      <i class="fas fa-times"></i>
-    </button>
   </div>
 
   <script>
@@ -892,32 +167,6 @@
     let scene, camera, renderer, globe, controls;
     let countriesData = [];
     let countryObjects = [];
-    let countryLabels = [];
-    let labelsVisible = true;
-    let autoRotate = false;
-    let favorites = JSON.parse(localStorage.getItem('geoWorldFavorites')) || [];
-    let currentView = 'all'; // 'all' أو 'favorites'
-
-    // إظهار الإشعارات
-    function showNotification(title, message, type = 'info', duration = 5000) {
-      const notification = document.getElementById('notification');
-      const notificationTitle = document.getElementById('notification-title');
-      const notificationMessage = document.getElementById('notification-message');
-      
-      notification.className = `notification ${type}`;
-      notificationTitle.textContent = title;
-      notificationMessage.textContent = message;
-      notification.classList.add('show');
-      
-      setTimeout(() => {
-        notification.classList.remove('show');
-      }, duration);
-    }
-
-    // إغلاق الإشعار
-    document.getElementById('notification-close').addEventListener('click', function() {
-      document.getElementById('notification').classList.remove('show');
-    });
 
     function initGlobe() {
       // إنشاء المشهد
@@ -925,24 +174,19 @@
       scene.background = new THREE.Color(0x071014);
 
       // إنشاء الكاميرا
-      const container = document.getElementById('globe');
-      camera = new THREE.PerspectiveCamera(60, container.offsetWidth / container.offsetHeight, 0.1, 2000);
-      camera.position.z = 400;
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 300;
 
       // إنشاء العارض
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setSize(container.offsetWidth, container.offsetHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // تحسين الأداء
-      container.appendChild(renderer.domElement);
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(document.getElementById('globe').offsetWidth, document.getElementById('globe').offsetHeight);
+      document.getElementById('globe').appendChild(renderer.domElement);
 
       // إضافة عناصر التحكم
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.rotateSpeed = 0.5;
-      controls.minDistance = 200;
-      controls.maxDistance = 800;
-      controls.autoRotate = autoRotate;
 
       // إضافة الضوء
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -999,199 +243,424 @@
         .then(geo => {
           countriesData = geo.features;
           drawCountryBorders(geo);
-          createCountryLabels(geo);
           populateCountryList(geo.features);
-          
-          // إخفاء مؤشر التحميل وإظهار القائمة
-          document.querySelector('.loading').style.display = 'none';
-          document.getElementById('country-list').style.display = 'block';
-          
-          showNotification('تم التحميل', 'تم تحميل بيانات جميع الدول بنجاح', 'success');
         })
         .catch(err => {
           console.error('فشل تحميل GeoJSON:', err);
-          document.querySelector('.loading p').textContent = 'حدث خطأ في تحميل البيانات. تأكد من اتصالك بالإنترنت.';
-          showNotification('خطأ في التحميل', 'تعذر تحميل بيانات الدول', 'error');
+          alert('حدث خطأ في تحميل بيانات حدود الدول. تأكد من اتصالك بالإنترنت.');
         });
     }
 
-    // باقي الكود يتبع نفس النمط مع إضافة الميزات الجديدة...
-
-    // إضافة المفضلة
-    function toggleFavorite(countryName, countryData) {
-      const index = favorites.findIndex(fav => fav.name === countryName);
+    function drawCountryBorders(geoData) {
+      const lineMaterial = new THREE.LineBasicMaterial({ color: 0x2bd4c8 });
       
-      if (index === -1) {
-        favorites.push({
-          name: countryName,
-          data: countryData,
-          addedAt: new Date().toISOString()
-        });
-        showNotification('تمت الإضافة', `تمت إضافة ${countryName} إلى المفضلة`, 'success');
-      } else {
-        favorites.splice(index, 1);
-        showNotification('تمت الإزالة', `تمت إزالة ${countryName} من المفضلة`, 'info');
-      }
-      
-      localStorage.setItem('geoWorldFavorites', JSON.stringify(favorites));
-      updateFavoritesUI();
-    }
-
-    // تحديث واجهة المفضلة
-    function updateFavoritesUI() {
-      const favoriteButtons = document.querySelectorAll('.country-fav-btn, .modal-fav-btn');
-      favoriteButtons.forEach(btn => {
-        const countryName = btn.dataset.country;
-        if (favorites.some(fav => fav.name === countryName)) {
-          btn.classList.add('favorited');
-          btn.innerHTML = '<i class="fas fa-star"></i>';
-        } else {
-          btn.classList.remove('favorited');
-          btn.innerHTML = '<i class="far fa-star"></i>';
-        }
-      });
-      
-      // تحديث قائمة المفضلة إذا كانت معروضة
-      if (currentView === 'favorites') {
-        showFavoritesView();
-      }
-    }
-
-    // عرض المفضلة
-    function showFavoritesView() {
-      const favoritesList = document.getElementById('favorite-countries');
-      const countryList = document.getElementById('country-list');
-      
-      if (currentView === 'favorites') {
-        favoritesList.innerHTML = '';
-        
-        if (favorites.length === 0) {
-          favoritesList.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 20px;">لا توجد دول في المفضلة</p>';
-        } else {
-          favorites.forEach(fav => {
-            const li = createCountryListItem(fav.data);
-            favoritesList.appendChild(li);
+      geoData.features.forEach(feature => {
+        if (feature.geometry.type === 'Polygon') {
+          feature.geometry.coordinates.forEach(polygon => {
+            const points = [];
+            polygon.forEach(coord => {
+              const lat = coord[1];
+              const lon = coord[0];
+              const point = latLonToVector3(lat, lon, 100.5);
+              points.push(point);
+            });
+            
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, lineMaterial);
+            line.userData = { country: feature.properties };
+            scene.add(line);
+            countryObjects.push(line);
+          });
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          feature.geometry.coordinates.forEach(multiPolygon => {
+            multiPolygon.forEach(polygon => {
+              const points = [];
+              polygon.forEach(coord => {
+                const lat = coord[1];
+                const lon = coord[0];
+                const point = latLonToVector3(lat, lon, 100.5);
+                points.push(point);
+              });
+              
+              const geometry = new THREE.BufferGeometry().setFromPoints(points);
+              const line = new THREE.Line(geometry, lineMaterial);
+              line.userData = { country: feature.properties };
+              scene.add(line);
+              countryObjects.push(line);
+            });
           });
         }
-        
-        favoritesList.style.display = 'block';
-        countryList.style.display = 'none';
-      } else {
-        favoritesList.style.display = 'none';
-        countryList.style.display = 'block';
+      });
+    }
+
+    function latLonToVector3(lat, lon, radius) {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lon + 180) * (Math.PI / 180);
+      
+      const x = -(radius * Math.sin(phi) * Math.cos(theta));
+      const z = radius * Math.sin(phi) * Math.sin(theta);
+      const y = radius * Math.cos(phi);
+      
+      return new THREE.Vector3(x, y, z);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // === عناصر DOM ===
+    const countryListEl = document.getElementById('country-list');
+    const searchInput = document.getElementById('search');
+    const regionFilter = document.getElementById('region-filter');
+
+    const modal = document.getElementById('country-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const modalFlag = document.getElementById('modal-flag');
+    const modalName = document.getElementById('modal-name');
+    const modalRegion = document.getElementById('modal-region');
+    const modalCapital = document.getElementById('modal-capital');
+    const modalPopulation = document.getElementById('modal-population');
+    const modalArea = document.getElementById('modal-area');
+    const modalCurrency = document.getElementById('modal-currency');
+    const modalLanguages = document.getElementById('modal-languages');
+    const modalNote = document.getElementById('modal-note');
+    const modalClassification = document.getElementById('modal-classification');
+    const modalMore = document.getElementById('modal-more');
+
+    // خريطة لتحويل subregion إلى وصف عربي تقريبي
+    const subregionArabic = {
+      "Southern Asia":"جنوب آسيا",
+      "Western Asia":"غرب آسيا",
+      "Central Asia":"آسيا الوسطى",
+      "South-Eastern Asia":"جنوب شرق آسيا",
+      "Eastern Europe":"شرق أوروبا",
+      "Northern Europe":"شمال أوروبا",
+      "Southern Europe":"جنوب أوروبا",
+      "Western Europe":"غرب أوروبا",
+      "Northern Africa":"شمال أفريقيا",
+      "Sub-Saharan Africa":"أفريقيا جنوب الصحراء",
+      "Caribbean":"الكاريبي",
+      "Central America":"أمريكا الوسطى",
+      "South America":"أمريكا الجنوبية",
+      "Micronesia":"ميكرونيزيا",
+      "Polynesia":"بولنيسيا",
+      "Melanesia":"ميلانيسيا",
+      "Australia and New Zealand":"أستراليا ونيوزيلندا",
+      "Antarctica":"القطب الجنوبي"
+    };
+
+    // عند الضغط على دولة: نجيب بياناتها من REST Countries ونظهر المودال
+    async function onCountryClick(feature) {
+      const props = feature.properties || {};
+      let countryName = props.name || props.NAME || props.ADMIN || null;
+      // أفضل طريقة: نبحث أولًا عن الـ ISO_A3 أو ISO_A2
+      const iso_a3 = props['iso_a3'] || props['ISO_A3'] || props['ISO3'] || null;
+      const iso_a2 = props['iso_a2'] || props['ISO_A2'] || props['ISO_A2'] || null;
+
+      try {
+        let restData = null;
+
+        if(iso_a2 && iso_a2.length === 2){
+          // جلب باستخدام كود البلد (alpha2)
+          restData = await fetchRestCountryByCode(iso_a2);
+        }
+        if(!restData && iso_a3 && iso_a3.length === 3){
+          restData = await fetchRestCountryByCode(iso_a3);
+        }
+        if(!restData && countryName){
+          // البحث بالاسم (قد يفشل لبعض الأسماء المحلية)
+          restData = await fetchRestCountryByName(countryName);
+        }
+
+        if(!restData){
+          // لو مفهوش بيانات من REST Countries نعرض مودال بالحد الأدنى من المعلومات المتاحة
+          showModalMinimal(countryName, feature);
+          return;
+        }
+
+        showCountryModalFromRest(restData, feature);
+
+      } catch (err){
+        console.error('خطأ عند جلب بيانات الدولة:', err);
+        showModalMinimal(countryName, feature);
       }
     }
 
-    // تهيئة التطبيق
-    window.addEventListener('load', function() {
-      initGlobe();
-      setupEventListeners();
-      updateFavoritesUI();
-      
-      // إضافة مؤشر التحميل
-      simulateLoadingProgress();
+    // جلب بيانات من REST Countries حسب الكود (alpha2/alpha3)
+    async function fetchRestCountryByCode(code){
+      // REST Countries — v3.1
+      const url = `https://restcountries.com/v3.1/alpha/${code}`;
+      const r = await fetch(url);
+      if(!r.ok) return null;
+      const data = await r.json();
+      return data && data[0] ? data[0] : null;
+    }
+    
+    async function fetchRestCountryByName(name){
+      const url = `https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fullText=true`;
+      const r = await fetch(url);
+      if(!r.ok){
+        // محاولة بحث جزئي
+        const r2 = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(name)}`);
+        if(!r2.ok) return null;
+        const d2 = await r2.json();
+        return d2 && d2[0] ? d2[0] : null;
+      }
+      const data = await r.json();
+      return data && data[0] ? data[0] : null;
+    }
+
+    // عرض المودال باستخدام بيانات REST Countries
+    function showCountryModalFromRest(rc, feature){
+      const commonName = rc.name && (rc.name.common || rc.name.official) || feature.properties.name || "غير معروف";
+      modalName.textContent = commonName;
+
+      // علم
+      const flagUrl = rc.flags && (rc.flags.png || rc.flags.svg) || '';
+      modalFlag.src = flagUrl;
+      modalFlag.alt = `علم ${commonName}`;
+
+      // region / subregion
+      const region = rc.region || '';
+      const subregion = rc.subregion || '';
+      let regionText = region;
+      if(subregion){
+        regionText += ` — ${subregionArabic[subregion] || subregion}`;
+      }
+      modalRegion.textContent = regionText || 'غير متوفر';
+
+      // العاصمة
+      modalCapital.textContent = (rc.capital && rc.capital[0]) || 'غير متوفر';
+
+      // السكان
+      modalPopulation.textContent = rc.population ? numberWithCommas(rc.population) + ' نسمة' : 'غير متوفر';
+
+      // المساحة
+      modalArea.textContent = rc.area ? numberWithCommas(Math.round(rc.area)) : 'غير متوفر';
+
+      // العملات
+      if(rc.currencies){
+        const curArr = Object.keys(rc.currencies).map(k => `${k} (${rc.currencies[k].name || ''})`);
+        modalCurrency.textContent = curArr.join(', ');
+      } else modalCurrency.textContent = 'غير متوفر';
+
+      // اللغات
+      if(rc.languages){
+        modalLanguages.textContent = Object.values(rc.languages).join(', ');
+      } else modalLanguages.textContent = 'غير متوفر';
+
+      // نبذة موجزة (ننشئ جملة قصيرة من الخصائص المتاحة)
+      let noteParts = [];
+      if(rc.independent === true) noteParts.push('دولة مستقلة');
+      if(rc.unMember === false) noteParts.push('ليست عضوًا في الأمم المتحدة');
+      if(rc.capital && rc.capital.length) noteParts.push(`عاصمتها ${rc.capital[0]}`);
+      modalNote.textContent = noteParts.length ? noteParts.join(' • ') : '—';
+
+      // تصنيف تقديري — مبني على عدد السكان (منطق بسيط يمكن استبداله لاحقًا ببيانات اقتصادية)
+      const classification = estimateClassification(rc.population, rc.area);
+      modalClassification.textContent = classification;
+
+      // رابط للمزيد
+      modalMore.href = rc.maps && rc.maps.googleMaps ? rc.maps.googleMaps : `https://restcountries.com/`;
+      modalMore.textContent = 'عرض صفحة REST Countries (مصدر البيانات)';
+
+      // إظهار المودال
+      modal.classList.remove('hidden');
+    }
+
+    // إذا لم تتوفر بيانات REST Countries
+    function showModalMinimal(name, feature){
+      modalName.textContent = name || 'غير معروف';
+      modalFlag.src = '';
+      modalFlag.alt = '';
+      modalRegion.textContent = feature.properties.region || feature.properties.continent || 'غير متوفر';
+      modalCapital.textContent = 'غير متوفر';
+      modalPopulation.textContent = 'غير متوفر';
+      modalArea.textContent = feature.properties.area ? feature.properties.area : 'غير متوفر';
+      modalCurrency.textContent = 'غير متوفر';
+      modalLanguages.textContent = 'غير متوفر';
+      modalNote.textContent = 'لا توجد بيانات إضافية من مصدر خارجي.';
+      modalClassification.textContent = 'غير معروف (لا توجد بيانات كافية)';
+      modalMore.href = '#';
+      modalMore.textContent = 'لا يوجد';
+      modal.classList.remove('hidden');
+    }
+
+    // تصنيف تقديري بناءً على السكان (قواعد بسيطة لتوضيح الفكرة)
+    function estimateClassification(population, area){
+      // population may be undefined
+      if(!population) return 'غير متوفر (تقديري)';
+      const pop = Number(population);
+      if(pop >= 100_000_000) return 'قوية (دولة كبيرة تعدادياً)';
+      if(pop >= 50_000_000) return 'قوية/كبيرة';
+      if(pop >= 10_000_000) return 'متوسطة';
+      if(pop >= 1_000_000) return 'صغيرة';
+      return 'هامشية (قليلة السكان)';
+    }
+
+    // مساعدة لتنسيق الأرقام
+    function numberWithCommas(x){
+      if(!x && x !== 0) return x;
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // غلق المودال
+    closeModalBtn.addEventListener('click', ()=> modal.classList.add('hidden'));
+    modal.addEventListener('click', (e) => {
+      if(e.target === modal) modal.classList.add('hidden');
     });
 
-    // محاكاة تقدم التحميل
-    function simulateLoadingProgress() {
-      let progress = 0;
-      const progressBar = document.getElementById('loading-progress');
-      const interval = setInterval(() => {
-        progress += Math.random() * 10;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
+    // === قائمة الدول في الشريط الجانبي + بحث + تصفية ===
+    function populateCountryList(features){
+      countryListEl.innerHTML = '';
+      // نرتب اسامي الدول أبجدياً حسب الخاصية name
+      const arr = features.map(f => {
+        return {
+          name: f.properties.name || f.properties.NAME || f.properties.ADMIN || 'غير معروف',
+          props: f.properties,
+          feature: f
+        };
+      }).sort((a,b)=> a.name.localeCompare(b.name, 'ar') );
+
+      arr.forEach(item=>{
+        const li = document.createElement('li');
+        const img = document.createElement('img');
+        img.className = 'country-flag-thumb';
+        img.alt = `${item.name} علم`;
+        img.src = getFlagThumbUrl(item.props); // حاول نجيب علم من REST Countries عبر الكود لو متاح
+        const span = document.createElement('span');
+        span.textContent = item.name;
+        li.appendChild(img);
+        li.appendChild(span);
+        li.addEventListener('click', ()=>{
+          // عند الضغط على اسم الدولة في القائمة — نوجه الكرة الأرضية لموقع الدولة
+          focusOnCountry(item.feature);
+          onCountryClick(item.feature);
+        });
+        countryListEl.appendChild(li);
+      });
+    }
+
+    // محاولة الحصول على علم مصغر عن طريق ISO code المتاح في الخصائص
+    function getFlagThumbUrl(props){
+      // REST Countries uses alpha2 code (ISO 3166-1 alpha-2)
+      const iso_a2 = props.iso_a2 || props.ISO_A2 || props['ISO_A2'];
+      if(iso_a2){
+        return `https://flagcdn.com/w40/${iso_a2.toLowerCase()}.png`;
+      }
+      // بديل: محاولة من iso_a3 — بعض الأحيان لا يعمل مع flagcdn
+      const iso_a3 = props.iso_a3 || props.ISO_A3 || props['ISO3'];
+      if(iso_a3){
+        // لا يوجد رابط مباشر موثوق من iso3 لذلك نرجع صورة فارغة placeholder
+        return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="24"></svg>';
+      }
+      // placeholder شفاف
+      return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="24"></svg>';
+    }
+
+    // توجيه الكرة الأرضية لتركيز على دولة محددة
+    function focusOnCountry(feature) {
+      // حساب المركز التقريبي للدولة
+      const coords = getFeatureCenter(feature);
+      if (coords) {
+        // تحويل الإحداثيات الجغرافية إلى إحداثيات ثلاثية الأبعاد
+        const targetPosition = latLonToVector3(coords[0], coords[1], 200);
+        
+        // توجيه الكاميرا نحو الدولة
+        controls.target.set(targetPosition.x, targetPosition.y, targetPosition.z);
+        camera.position.set(targetPosition.x * 1.5, targetPosition.y * 1.5, targetPosition.z * 1.5);
+      }
+    }
+
+    // حساب مركز تقريبي من البوليغون (إذا متاح)
+    function getFeatureCenter(feature){
+      try {
+        const coords = feature.geometry.coordinates;
+        // نحاول استخراج أول زوج من الإحداثيات
+        if(!coords) return null;
+        function findFirstPair(arr){
+          if(typeof arr[0] === 'number' && typeof arr[1] === 'number') return arr;
+          for(let i=0;i<arr.length;i++){
+            const r = findFirstPair(arr[i]);
+            if(r) return r;
+          }
+          return null;
         }
-        progressBar.style.width = `${progress}%`;
-      }, 200);
+        const pair = findFirstPair(coords);
+        return pair ? [pair[1], pair[0]] : null;
+      } catch(e){ return null; }
     }
 
-    // إعداد مستمعي الأحداث
-    function setupEventListeners() {
-      // البحث والتصفية
-      document.getElementById('search').addEventListener('input', filterCountries);
-      document.getElementById('region-filter').addEventListener('change', filterCountries);
-      
-      // إعادة تعيين العرض
-      document.getElementById('reset-view').addEventListener('click', resetView);
-      
-      // التحكم في الكرة الأرضية
-      document.getElementById('zoom-in').addEventListener('click', () => {
-        controls.dollyOut(0.5);
-        controls.update();
+    // بحث بالاسم وتصفية حسب القارة
+    searchInput.addEventListener('input', filterList);
+    regionFilter.addEventListener('change', filterList);
+
+    function filterList(){
+      const q = searchInput.value.trim().toLowerCase();
+      const region = regionFilter.value;
+      const items = countryListEl.querySelectorAll('li');
+      items.forEach(li=>{
+        const txt = li.textContent.trim().toLowerCase();
+        let show = txt.includes(q);
+        if(region && show){
+          // نتحقق من كون الدولة في region المحدد باستخدام REST API (asynchronous) — لكن هنا نبسط: إخفاء/عرض حسب اسم المنطقة غير متوفر محليًا
+          // لذلك فقط نظهر حسب الاسم والبحث. لإضافة فلتر المناطق بدقة نحتاج تحميل ومطابقة بيانات REST Countries لكل عنصر مسبقًا.
+        }
+        li.style.display = show ? 'flex' : 'none';
       });
+    }
+
+    // إضافة تفاعل مع الكرة الأرضية
+    function addGlobeInteractivity() {
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
       
-      document.getElementById('zoom-out').addEventListener('click', () => {
-        controls.dollyIn(0.5);
-        controls.update();
-      });
+      function onMouseClick(event) {
+        // حساب موضع الماوس بالنسبة للعنصر
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        
+        // تحديث Raycaster
+        raycaster.setFromCamera(mouse, camera);
+        
+        // التحقق من التقاطع مع حدود الدول
+        const intersects = raycaster.intersectObjects(countryObjects);
+        
+        if (intersects.length > 0) {
+          const country = intersects[0].object.userData.country;
+          if (country) {
+            const feature = countriesData.find(f => 
+              f.properties.name === country.name || 
+              f.properties.NAME === country.name || 
+              f.properties.ADMIN === country.name
+            );
+            
+            if (feature) {
+              onCountryClick(feature);
+            }
+          }
+        }
+      }
       
-      document.getElementById('reset-rotation').addEventListener('click', () => {
-        controls.reset();
-      });
-      
-      document.getElementById('toggle-auto-rotate').addEventListener('click', () => {
-        autoRotate = !autoRotate;
-        controls.autoRotate = autoRotate;
-        document.getElementById('toggle-auto-rotate').classList.toggle('active', autoRotate);
-      });
-      
-      // إظهار/إخفاء الأسماء
-      document.getElementById('toggle-labels').addEventListener('click', () => {
-        labelsVisible = !labelsVisible;
-        toggleCountryLabels(labelsVisible);
-        document.getElementById('toggle-labels').classList.toggle('active', labelsVisible);
-      });
-      
-      // المفضلة
-      document.getElementById('toggle-favorites').addEventListener('click', () => {
-        currentView = currentView === 'all' ? 'favorites' : 'all';
-        document.getElementById('toggle-favorites').classList.toggle('active', currentView === 'favorites');
-        showFavoritesView();
-      });
-      
-      document.getElementById('toggle-favorites-view').addEventListener('click', () => {
-        currentView = currentView === 'all' ? 'favorites' : 'all';
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.classList.toggle('active', tab.dataset.tab === currentView);
-        });
-        showFavoritesView();
-      });
-      
-      // علامات التبويب
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          currentView = tab.dataset.tab;
-          showFavoritesView();
-        });
-      });
-      
-      // مسح الفلاتر
-      document.getElementById('clear-filters').addEventListener('click', () => {
-        document.getElementById('search').value = '';
-        document.getElementById('region-filter').value = '';
-        filterCountries();
-      });
-      
-      // القائمة المتنقلة
-      document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('hidden-mobile');
-      });
-      
-      // إغلاق النافذة المنبثقة
-      document.getElementById('close-modal').addEventListener('click', () => {
-        document.getElementById('country-modal').classList.add('hidden');
-      });
-      
-      // إعادة ضبط الحجم عند تغيير حجم النافذة
+      renderer.domElement.addEventListener('click', onMouseClick);
+    }
+
+    // تهيئة التطبيق عند تحميل الصفحة
+    window.addEventListener('load', function() {
+      initGlobe();
       window.addEventListener('resize', onWindowResize);
+      // إضافة التفاعل بعد تحميل بيانات الدول
+      setTimeout(addGlobeInteractivity, 2000);
+    });
+
+    function onWindowResize() {
+      camera.aspect = document.getElementById('globe').offsetWidth / document.getElementById('globe').offsetHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(document.getElementById('globe').offsetWidth, document.getElementById('globe').offsetHeight);
     }
-
-    // باقي الدوال الأساسية للكرة الأرضية...
-
-    // ملاحظة: هذا الكود مبسط للعرض، في التطبيق الحقيقي ستحتاج إلى إكمال جميع الدوال المذكورة
   </script>
 </body>
 </html>
