@@ -1,469 +1,175 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>خريطة العالم — 3D + 2D (حدود ثابتة، بيانات، أعلام)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>🌍 خريطة العالم التفاعلية — 3D + 2D</title>
 
-<!-- Three.js -->
+<!-- مكتبة Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-<!-- Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<!-- مكتبة Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-:root{--accent:#00ffff;--panel:rgba(2,8,12,0.8)}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:"Cairo",sans-serif;background:#000;color:#dff9ff}
-#switch-btn{position:fixed;left:16px;top:16px;z-index:9999;padding:10px 14px;border-radius:10px;background:var(--panel);color:var(--accent);border:1px solid rgba(255,255,255,0.04);cursor:pointer;font-weight:700}
-#app{position:relative;height:100vh;width:100vw;overflow:hidden}
-#globe,#map{position:absolute;inset:0;width:100%;height:100%}
-#map{display:none}
-#info-panel{position:fixed;right:16px;top:16px;width:340px;max-width:38vw;z-index:9999;background:linear-gradient(180deg,rgba(3,6,10,0.9),rgba(6,10,14,0.75));border-radius:12px;padding:12px;color:#dff9ff;border:1px solid rgba(255,255,255,0.04);box-shadow:0 12px 40px rgba(0,0,0,0.6)}
-#info-panel h2{margin:6px 0;font-size:18px}
-#info-flag{width:100%;height:160px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#111}
-.info-row{margin:8px 0;font-size:14px;color:#bdeff0}
-.info-label{color:#9adbe0;font-weight:700;margin-left:6px}
-#info-more{display:inline-block;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--accent);color:#001;text-decoration:none;font-weight:700}
-#loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:99999;background:rgba(0,0,0,0.6);padding:14px 18px;border-radius:10px;color:#bfeefc;display:flex;gap:12px;align-items:center;border:1px solid rgba(255,255,255,0.03)}
-.spinner{width:36px;height:36px;border-radius:50%;border:5px solid rgba(255,255,255,0.06);border-top-color:var(--accent);animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#hint{position:fixed;left:16px;bottom:16px;color:#9adbe0;z-index:9999;background:var(--panel);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)}
-@media (max-width:700px){#info-panel{width:92vw;right:4%;top:auto;bottom:12px}}
+:root { --accent:#00ffff; --panel:rgba(0,0,0,0.6); }
+body { margin:0; font-family:"Cairo",sans-serif; background:#000; color:#dff9ff; overflow:hidden; }
+#switch-btn {
+  position:fixed; top:15px; left:15px; z-index:9999;
+  padding:10px 16px; background:var(--panel); color:var(--accent);
+  border:1px solid var(--accent); border-radius:10px; cursor:pointer; font-weight:bold;
+}
+#switch-btn:hover { background:rgba(0,255,255,0.15); }
+
+#globe, #map { position:absolute; top:0; left:0; width:100%; height:100%; }
+#map { display:none; }
+
+#info-box {
+  position:fixed; top:15px; right:15px; width:280px;
+  background:var(--panel); padding:12px; border-radius:12px;
+  border:1px solid rgba(255,255,255,0.1); z-index:9999;
+}
+#info-box img { width:100%; border-radius:8px; border:1px solid rgba(255,255,255,0.1); }
+#info-box h3 { margin:10px 0 6px; color:#00ffff; }
+.info { font-size:14px; margin:5px 0; }
 </style>
 </head>
 <body>
-<div id="app">
-  <button id="switch-btn">🗺️ عرض الخريطة 2D</button>
+<button id="switch-btn">🗺️ عرض الخريطة 2D</button>
+<div id="globe"></div>
+<div id="map"></div>
 
-  <div id="globe"></div>
-  <div id="map"></div>
-
-  <div id="info-panel" aria-live="polite">
-    <img id="info-flag" src="" alt="علم" />
-    <h2 id="info-name">اضغط على دولة</h2>
-    <div class="info-row"><span class="info-label">العاصمة:</span> <span id="info-capital">—</span></div>
-    <div class="info-row"><span class="info-label">السكان:</span> <span id="info-population">—</span></div>
-    <div class="info-row"><span class="info-label">المساحة:</span> <span id="info-area">—</span></div>
-    <div class="info-row"><span class="info-label">العملة:</span> <span id="info-currency">—</span></div>
-    <a id="info-more" href="#" target="_blank" rel="noopener">عرض المزيد</a>
-  </div>
-
-  <div id="loading"><div class="spinner" aria-hidden="true"></div><div id="loading-text">جاري التحميل...</div></div>
-  <div id="hint">استخدم الفأرة لتدوير الكرة، اضغط على دولة لعرض معلوماتها.</div>
+<div id="info-box">
+  <img id="flag" src="" alt="">
+  <h3 id="country-name">اضغط على دولة</h3>
+  <div class="info">العاصمة: <span id="capital">—</span></div>
+  <div class="info">السكان: <span id="population">—</span></div>
+  <div class="info">المساحة: <span id="area">—</span></div>
+  <div class="info">العملة: <span id="currency">—</span></div>
 </div>
 
 <script>
-/*
-  ** ملاحظة مهمة **
-  لو عايز المشروع يكون ملف واحد فقط بدون رفع ملفات، ضع محتوى ملف countries.geojson بالكامل
-  داخل الثابت EMBEDDED_GEOJSON (نفس شكل JSON كامل). لكن حجم الملف كبير.
-  حالياً الكود يحاول أولاً جلب './countries.geojson' محلياً، وإذا مش موجود يستخدم fallback من GitHub.
-*/
+let scene, camera, renderer, globe, controls, stars;
+let selectedCountry = null;
 
-/* ------------ ضع محتوى GeoJSON هنا لو عايز كل شيء في ملف واحد  ------------ */
-const EMBEDDED_GEOJSON = null; // <-- لو عايز كل شيء داخل ملف واحد: غيّر null إلى object الـ GeoJSON.
+const infoName = document.getElementById('country-name');
+const infoFlag = document.getElementById('flag');
+const infoCapital = document.getElementById('capital');
+const infoPopulation = document.getElementById('population');
+const infoArea = document.getElementById('area');
+const infoCurrency = document.getElementById('currency');
 
-/* ------------------ عناصر DOM ------------------ */
-const switchBtn = document.getElementById('switch-btn');
-const globeContainer = document.getElementById('globe');
-const mapContainer = document.getElementById('map');
-const loadingEl = document.getElementById('loading');
-const loadingText = document.getElementById('loading-text');
-
-const infoName = document.getElementById('info-name');
-const infoFlag = document.getElementById('info-flag');
-const infoCapital = document.getElementById('info-capital');
-const infoPopulation = document.getElementById('info-population');
-const infoArea = document.getElementById('info-area');
-const infoCurrency = document.getElementById('info-currency');
-const infoMore = document.getElementById('info-more');
-
-let is3D = true;
-
-/* ----------------- أدوات مساعدة ----------------- */
-function showLoading(txt){ if(txt) loadingText.textContent = txt; loadingEl.style.display = 'flex'; }
-function hideLoading(){ loadingEl.style.display = 'none'; }
-function numberWithCommas(x){ if(!x && x!==0) return '—'; return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
-
-/* ----------------- Three.js 3D Globe ----------------- */
-let scene, camera, renderer, controls, globeMesh, starsMesh;
-let clickableGroup = null;
-let countryBorders = []; // array of {feature, group, defaultColor, highlighted}
-let clickableSpheres = [];
-let selectedIndex = null;
-
-function init3D(){
+function initGlobe(){
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000);
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.set(0,0,2.5);
 
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.05, 2000);
-  camera.position.set(0,0,2.6);
-
-  renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  renderer = new THREE.WebGLRenderer({ antialias:true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  globeContainer.appendChild(renderer.domElement);
+  document.getElementById('globe').appendChild(renderer.domElement);
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.rotateSpeed = 0.6;
-  controls.zoomSpeed = 1.1;
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambient);
-  const dir = new THREE.DirectionalLight(0xffffff, 0.8); dir.position.set(5,3,5); scene.add(dir);
+  const light = new THREE.DirectionalLight(0xffffff,1);
+  light.position.set(5,3,5);
+  scene.add(light);
+  scene.add(new THREE.AmbientLight(0x404040));
 
-  // Globe
   const loader = new THREE.TextureLoader();
   const earthTex = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/land_ocean_ice_cloud_2048.jpg');
-  const globeGeo = new THREE.SphereGeometry(1, 64, 64);
-  const globeMat = new THREE.MeshPhongMaterial({ map: earthTex, shininess: 5 });
-  globeMesh = new THREE.Mesh(globeGeo, globeMat);
-  scene.add(globeMesh);
+  const globeGeo = new THREE.SphereGeometry(1,64,64);
+  const globeMat = new THREE.MeshPhongMaterial({ map: earthTex });
+  globe = new THREE.Mesh(globeGeo, globeMat);
+  scene.add(globe);
 
-  // cloud
-  loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.png', (t)=>{
-    const cloud = new THREE.Mesh(new THREE.SphereGeometry(1.005,64,64), new THREE.MeshPhongMaterial({ map:t, transparent:true, opacity:0.22, depthWrite:false }));
-    globeMesh.add(cloud);
+  // خلفية المجرة
+  const starGeo = new THREE.SphereGeometry(90,64,64);
+  const starMat = new THREE.MeshBasicMaterial({
+    map: loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/galaxy_starfield.png'),
+    side: THREE.BackSide
   });
-
-  // stars background (galaxy feel)
-  loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/galaxy_starfield.png', (t)=>{
-    const starGeo = new THREE.SphereGeometry(90, 64, 64);
-    const starMat = new THREE.MeshBasicMaterial({ map:t, side: THREE.BackSide });
-    starsMesh = new THREE.Mesh(starGeo, starMat);
-    scene.add(starsMesh);
-  });
-
-  // clickable group attached to globeMesh so it rotates with globe
-  clickableGroup = new THREE.Group();
-  globeMesh.add(clickableGroup);
+  stars = new THREE.Mesh(starGeo, starMat);
+  scene.add(stars);
 
   animate();
 }
-
 function animate(){
   requestAnimationFrame(animate);
-  if(globeMesh) globeMesh.rotation.y += 0.0008;
-  if(starsMesh) starsMesh.rotation.y += 0.00012;
+  globe.rotation.y += 0.0008;
+  stars.rotation.y += 0.00015;
   controls.update();
   renderer.render(scene, camera);
 }
+initGlobe();
 
-/* ---------- Helpers: lat/lon -> Vector3 ---------- */
-function latLonToVec3(lat, lon, radius=1.002){
-  const phi = (90 - lat) * Math.PI / 180;
-  const theta = (lon + 180) * Math.PI / 180;
-  const x = - (radius * Math.sin(phi) * Math.cos(theta));
-  const z = radius * Math.sin(phi) * Math.sin(theta);
-  const y = radius * Math.cos(phi);
-  return new THREE.Vector3(x,y,z);
-}
+// ======== خريطة 2D ========
+const mapDiv = L.map('map',{ center:[20,0], zoom:2, worldCopyJump:true, zoomControl:true });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:6,
+  attribution:'&copy; OpenStreetMap'
+}).addTo(mapDiv);
 
-/* ----------------- GeoJSON loading ----------------- */
-async function loadGeoJSON(){
-  showLoading('جاري تحميل حدود الدول...');
-  if(EMBEDDED_GEOJSON){
-    hideLoading();
-    return EMBEDDED_GEOJSON;
-  }
-  // حاول تحميل محليًا أولًا
-  try {
-    const res = await fetch('./countries.geojson');
-    if(res.ok){ const data = await res.json(); hideLoading(); return data; }
-    throw new Error('local-not-found');
-  } catch(e){
-    // fallback remote
-    try {
-      loadingText.textContent = 'لم يتم العثور على ملف محلي، يجرب fallback من GitHub...';
-      const remote = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
-      const r = await fetch(remote);
-      if(!r.ok) throw new Error('remote-failed');
-      const data = await r.json(); hideLoading(); return data;
-    } catch(err){
-      hideLoading();
-      alert('فشل تحميل حدود الدول. لو عايز كل شيء في ملف واحد ضع محتوى countries.geojson داخل المتغير EMBEDDED_GEOJSON.');
-      throw err;
+let layer;
+fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
+.then(r=>r.json()).then(data=>{
+  layer = L.geoJSON(data,{
+    style:{ color:"#00ffff", weight:1, fillOpacity:0.1 },
+    onEachFeature:(feature, l)=>{
+      l.on('click', ()=>{
+        if(selectedCountry) layer.resetStyle(selectedCountry);
+        selectedCountry = l;
+        l.setStyle({ color:"#ff3b3b", weight:2 });
+        const name = feature.properties.ADMIN;
+        getCountryInfo(name);
+      });
     }
-  }
-}
+  }).addTo(mapDiv);
+});
 
-/* ----------------- Draw borders on globe ----------------- */
-function clearOldBorders(){
-  countryBorders.forEach(entry => {
-    if(entry.group) globeMesh.remove(entry.group);
-  });
-  countryBorders = [];
-  // clear clickableGroup
-  while(clickableGroup.children.length) clickableGroup.remove(clickableGroup.children[0]);
-  clickableSpheres = [];
-}
-
-function drawBordersOnGlobe(geojson){
-  clearOldBorders();
-  const defaultColor = 0x46f0ff;
-  const highlightColor = 0xff3b3b;
-
-  geojson.features.forEach((feature, idx) => {
-    const geom = feature.geometry;
-    if(!geom) return;
-    const group = new THREE.Group();
-    group.name = 'country-'+idx;
-
-    // line material per-country (clone for ability to change)
-    const mat = new THREE.LineBasicMaterial({ color: defaultColor, linewidth: 1 });
-
-    function polyToLine(coords){
-      // coords: array of [lon,lat,...]
-      const pts = coords.map(c => latLonToVec3(c[1], c[0], 1.002));
-      // create geometry that does NOT connect last to first so no crossing artifact
-      const positions = new Float32Array(pts.length * 3);
-      for(let i=0;i<pts.length;i++){ positions[i*3]=pts[i].x; positions[i*3+1]=pts[i].y; positions[i*3+2]=pts[i].z; }
-      const buffer = new THREE.BufferGeometry();
-      buffer.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      const line = new THREE.Line(buffer, mat.clone());
-      group.add(line);
-    }
-
-    if(geom.type === 'Polygon'){
-      geom.coordinates.forEach(ring => polyToLine(ring));
-    } else if(geom.type === 'MultiPolygon'){
-      geom.coordinates.forEach(poly => poly.forEach(ring => polyToLine(ring)));
-    }
-
-    // attach feature reference for later
-    group.userData = { feature, index: idx, defaultColor, highlightColor };
-    globeMesh.add(group);
-    countryBorders.push({ feature, group, defaultColor, highlightColor, highlighted:false });
-
-    // centroid clickable point
-    const centroid = computeCentroid(feature.geometry.coordinates);
-    if(centroid){
-      const pos = latLonToVec3(centroid[0], centroid[1], 1.007);
-      const invisibleGeo = new THREE.SphereGeometry(0.02, 8, 8);
-      const invisibleMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0001 });
-      const mesh = new THREE.Mesh(invisibleGeo, invisibleMat);
-      mesh.position.copy(pos);
-      mesh.userData = { featureIndex: idx };
-      clickableGroup.add(mesh);
-      clickableSpheres.push(mesh);
-
-      // small visible marker for hover
-      const mGeo = new THREE.SphereGeometry(0.01, 8, 8);
-      const mMat = new THREE.MeshBasicMaterial({ color: defaultColor, transparent:true, opacity:0.0 });
-      const marker = new THREE.Mesh(mGeo, mMat);
-      marker.position.copy(pos);
-      clickableGroup.add(marker);
-      mesh.userData.marker = marker;
-    }
+// ======== جلب بيانات الدولة ========
+function getCountryInfo(name){
+  fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fullText=false`)
+  .then(r=>r.json()).then(data=>{
+    const c = data[0];
+    infoName.textContent = c.name.common || name;
+    infoFlag.src = c.flags.png || c.flags.svg || "";
+    infoCapital.textContent = c.capital ? c.capital[0] : "—";
+    infoPopulation.textContent = c.population ? c.population.toLocaleString()+" نسمة" : "—";
+    infoArea.textContent = c.area ? c.area.toLocaleString()+" كم²" : "—";
+    infoCurrency.textContent = c.currencies ? Object.keys(c.currencies).map(k=>k+" ("+c.currencies[k].name+")").join(", ") : "—";
+  }).catch(()=>{
+    infoName.textContent = name;
+    infoFlag.src = "";
+    infoCapital.textContent = infoPopulation.textContent = infoArea.textContent = infoCurrency.textContent = "—";
   });
 }
 
-/* compute centroid approx for arbitrary nested coords */
-function computeCentroid(coords){
-  const pts = [];
-  (function walk(a){
-    if(!a) return;
-    if(typeof a[0] === 'number' && typeof a[1] === 'number'){ pts.push(a); return; }
-    for(let i=0;i<a.length;i++) walk(a[i]);
-  })(coords);
-  if(pts.length===0) return null;
-  let sumLon=0,sumLat=0;
-  pts.forEach(p => { sumLon+=p[0]; sumLat+=p[1]; });
-  return [sumLat/pts.length, sumLon/pts.length];
-}
-
-/* ----------------- Raycasting & interaction 3D ----------------- */
-function enableGlobeInteractivity(geojson){
-  const raycaster = new THREE.Raycaster();
-  const mouse = new THREE.Vector2();
-
-  function getMousePos(e){
-    const rect = renderer.domElement.getBoundingClientRect();
-    const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-    const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
-    mouse.x = ((clientX - rect.left)/rect.width) * 2 - 1;
-    mouse.y = -((clientY - rect.top)/rect.height) * 2 + 1;
-  }
-
-  function onMove(e){
-    getMousePos(e);
-    // update world matrices to ensure accurate intersection (because clickableGroup is child of globeMesh)
-    globeMesh.updateMatrixWorld(true);
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(clickableSpheres, true);
-    clickableSpheres.forEach(s => { if(s.userData && s.userData.marker) s.userData.marker.material.opacity = 0.0; });
-    if(intersects.length){
-      const m = intersects[0].object;
-      if(m.userData && m.userData.marker) m.userData.marker.material.opacity = 0.9;
-    }
-  }
-
-  async function onClick(e){
-    getMousePos(e);
-    globeMesh.updateMatrixWorld(true);
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(clickableSpheres, true);
-    if(intersects.length){
-      const m = intersects[0].object;
-      const idx = m.userData.featureIndex;
-      const feature = geojson.features[idx];
-      highlightCountry(idx);
-      await showInfoForFeature(feature);
-      focusOnFeature(feature);
-    }
-  }
-
-  renderer.domElement.addEventListener('mousemove', onMove);
-  renderer.domElement.addEventListener('click', onClick);
-  renderer.domElement.addEventListener('touchstart', (e)=>{ onMove(e); onClick(e); }, {passive:true});
-}
-
-/* focus camera to centroid */
-function focusOnFeature(feature){
-  const centroid = computeCentroid(feature.geometry.coordinates);
-  if(!centroid) return;
-  const vec = latLonToVec3(centroid[0], centroid[1], 2.2);
-  camera.position.set(vec.x, vec.y, vec.z);
-  controls.target.copy(latLonToVec3(centroid[0], centroid[1], 0));
-}
-
-/* highlight borders (3D) */
-function highlightCountry(idx){
-  // clear prev
-  if(selectedIndex !== null && countryBorders[selectedIndex]){
-    const prev = countryBorders[selectedIndex];
-    prev.group.traverse(obj=>{ if(obj.isLine) obj.material.color.set(prev.defaultColor); });
-    prev.highlighted = false;
-  }
-  // new
-  const entry = countryBorders[idx];
-  if(entry){
-    entry.group.traverse(obj=>{ if(obj.isLine) obj.material.color.set(entry.highlightColor); });
-    entry.highlighted = true;
-    selectedIndex = idx;
-  } else selectedIndex = null;
-}
-
-/* ----------------- show info using REST Countries (or fallback) ----------------- */
-async function showInfoForFeature(feature){
-  const props = feature.properties || {};
-  const iso = (props.ISO_A2 || props.iso_a2 || props.iso2 || '').toString();
-  const name = (props.ADMIN || props.NAME || props.name || '').toString();
-  infoName.textContent = 'تحميل معلومات...';
-  infoFlag.src = '';
-  infoCapital.textContent = infoPopulation.textContent = infoArea.textContent = infoCurrency.textContent = '—';
-  infoMore.href = '#';
-
-  try {
-    let url = '';
-    if(iso) url = `https://restcountries.com/v3.1/alpha/${iso}`;
-    else if(name) url = `https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fullText=false`;
-    else throw new Error('no-identifier');
-
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('rest-fail');
-    const arr = await res.json();
-    const data = Array.isArray(arr) ? arr[0] : arr;
-    const common = (data.name && (data.name.common || data.name.official)) || name || 'غير معروف';
-    infoName.textContent = common;
-    if(data.flags){ infoFlag.src = data.flags.png || data.flags.svg || ''; infoFlag.alt = `علم ${common}`; } else { infoFlag.src=''; infoFlag.alt=''; }
-    infoCapital.textContent = (data.capital && data.capital[0]) || '—';
-    infoPopulation.textContent = data.population ? numberWithCommas(data.population)+' نسمة' : '—';
-    infoArea.textContent = data.area ? numberWithCommas(Math.round(data.area))+' كم²' : '—';
-    if(data.currencies){ infoCurrency.textContent = Object.keys(data.currencies).map(k=>k+" ("+ (data.currencies[k].name||'') +")").join(', '); }
-    else infoCurrency.textContent = '—';
-    if(data.maps && data.maps.googleMaps) infoMore.href = data.maps.googleMaps;
-    else infoMore.href = `https://www.google.com/search?q=${encodeURIComponent(common+' country')}`;
-  } catch(err){
-    // fallback minimal display
-    infoName.textContent = name || 'غير معروف';
-    infoFlag.src = '';
-    infoMore.href = '#';
-  }
-}
-
-/* ----------------- Leaflet 2D map ----------------- */
-let map2, geojsonLayer = null;
-function init2D(){
-  map2 = L.map('map', { center:[20,0], zoom:2, worldCopyJump:true, zoomControl:true });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'&copy; OpenStreetMap' }).addTo(map2);
-}
-
-function addGeoJsonToMap(geojson){
-  if(geojsonLayer) map2.removeLayer(geojsonLayer);
-
-  function styleDefault(){ return { color: "#46f0ff", weight:1, fillOpacity:0.06 }; }
-  function styleHighlight(){ return { color: "#ff3b3b", weight:2, fillOpacity:0.12 }; }
-
-  function onEachFeature(feature, layer){
-    layer.on({
-      click: async function(e){
-        // reset previous
-        if(geojsonLayer) geojsonLayer.resetStyle();
-        layer.setStyle(styleHighlight());
-        // highlight on globe
-        const idx = geojson.features.indexOf(feature);
-        if(idx>=0) highlightCountry(idx);
-        await showInfoForFeature(feature);
-        if(layer.getBounds) try { map2.fitBounds(layer.getBounds(), { maxZoom:6 }); } catch(e){}
-      }
-    });
-    layer.bindTooltip(feature.properties && (feature.properties.ADMIN||feature.properties.NAME) || 'غير معروف', {direction:'auto'});
-  }
-
-  geojsonLayer = L.geoJSON(geojson, { style: styleDefault, onEachFeature }).addTo(map2);
-}
-
-/* ----------------- Switch view ----------------- */
-switchBtn.addEventListener('click', ()=>{
-  if(is3D){
-    globeContainer.style.display = 'none';
-    mapContainer.style.display = 'block';
-    switchBtn.textContent = '🌌 عرض الكرة الأرضية 3D';
-    setTimeout(()=>{ if(map2) map2.invalidateSize(); }, 200);
+// ======== التبديل بين 3D و 2D ========
+document.getElementById('switch-btn').addEventListener('click',()=>{
+  const globeDiv = document.getElementById('globe');
+  const mapDivEl = document.getElementById('map');
+  const btn = document.getElementById('switch-btn');
+  if(globeDiv.style.display !== "none"){
+    globeDiv.style.display = "none";
+    mapDivEl.style.display = "block";
+    btn.textContent = "🌌 عرض الكرة الأرضية 3D";
+    setTimeout(()=>mapDiv.invalidateSize(),200);
   } else {
-    globeContainer.style.display = 'block';
-    mapContainer.style.display = 'none';
-    switchBtn.textContent = '🗺️ عرض الخريطة 2D';
+    globeDiv.style.display = "block";
+    mapDivEl.style.display = "none";
+    btn.textContent = "🗺️ عرض الخريطة 2D";
   }
-  is3D = !is3D;
 });
 
-/* ----------------- Boot sequence ----------------- */
-async function boot(){
-  try {
-    showLoading('تهيئة المشهد 3D...');
-    init3D();
-    showLoading('تهيئة الخريطة 2D...');
-    init2D();
-
-    const geojson = await loadGeoJSON(); // either EMBEDDED_GEOJSON or local or remote fallback
-    showLoading('رسم الحدود على الكرة...');
-    drawBordersOnGlobe(geojson);
-    showLoading('إضافة الحدود إلى الخريطة 2D...');
-    addGeoJsonToMap(geojson);
-
-    // bind interactivity AFTER drawing
-    showLoading('تفعيل التفاعل...');
-    enableGlobeInteractivity(geojson);
-
-    hideLoading();
-  } catch(e){
-    hideLoading();
-    console.error(e);
-  }
-}
-
-/* responsive */
-window.addEventListener('resize', ()=>{
-  if(renderer && camera){ camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
-  if(map2) map2.invalidateSize();
+window.addEventListener('resize',()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  mapDiv.invalidateSize();
 });
-
-boot();
 </script>
 </body>
 </html>
