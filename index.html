@@ -25,18 +25,21 @@ body {
   justify-content:center;
   overflow:hidden;
 }
-.logo {
-  font-size:2.2em;
-  font-weight:800;
-  letter-spacing:1px;
+header {
+  position:fixed;
+  top:10px;
+  right:15px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:700;
+  font-size:1.2em;
   color:var(--accent);
-  text-shadow:0 0 10px var(--accent),0 0 20px var(--accent),0 0 40px var(--accent);
-  animation:glow 2s ease-in-out infinite alternate;
-  margin-bottom:10px;
+  text-shadow:0 0 10px var(--accent);
 }
-@keyframes glow {
-  from { text-shadow:0 0 5px var(--accent),0 0 10px var(--accent);}
-  to { text-shadow:0 0 20px var(--accent),0 0 40px var(--accent);}
+header img {
+  width:28px;
+  height:28px;
 }
 #game {
   background:rgba(255,255,255,0.05);
@@ -75,8 +78,8 @@ button.option {
 button.option:hover { background:rgba(255,255,255,0.1); }
 .score {
   position:fixed;
-  top:15px;
-  left:20px;
+  top:10px;
+  left:15px;
   font-weight:700;
   color:var(--accent);
   font-size:1.2em;
@@ -92,8 +95,11 @@ button.option:hover { background:rgba(255,255,255,0.1); }
 </style>
 </head>
 <body>
+<header>
+  <span>ZIDAN Quiz</span>
+  <img src="https://cdn-icons-png.flaticon.com/512/1975/1975637.png" alt="logo">
+</header>
 <div class="score" id="score">النتيجة: 0</div>
-<div class="logo">🌍 ZIDAN Flags Quiz</div>
 <div id="game">
   <img id="flag" src="" alt="Flag">
   <div class="options" id="options"></div>
@@ -103,32 +109,39 @@ button.option:hover { background:rgba(255,255,255,0.1); }
 const flagEl=document.getElementById('flag');
 const optionsEl=document.getElementById('options');
 const scoreEl=document.getElementById('score');
-let countries=[],current=0,score=0,used=[];
+let countries=[],used=[],score=0;
 
 async function loadCountries(){
-  const res=await fetch("https://restcountries.com/v3.1/all");
-  const data=await res.json();
-  countries=data.filter(c=>c.flags && c.name && c.name.common);
+  try{
+    const res=await fetch("https://restcountries.com/v3.1/all");
+    const data=await res.json();
+    countries=data.filter(c=>c.flags && c.name && c.name.common);
+    startGame();
+  }catch(e){
+    alert("حدث خطأ في تحميل الأعلام، أعد المحاولة.");
+  }
+}
+
+function startGame(){
   nextRound();
 }
 
 function nextRound(){
   if(used.length===countries.length){
     alert("🎉 خلصت كل الأعلام! نتيجتك: "+score);
-    used=[];
-    score=0;
+    used=[]; score=0;
     scoreEl.textContent="النتيجة: 0";
   }
   let rand;
   do { rand=Math.floor(Math.random()*countries.length); }
   while(used.includes(rand));
   used.push(rand);
+
   const correct=countries[rand];
-  flagEl.src=correct.flags.png;
+  flagEl.src=correct.flags.png || correct.flags.svg;
   flagEl.style.display='block';
   flagEl.classList.add("fade");
 
-  // عرض العلم ثانية واحدة فقط
   setTimeout(()=>{
     flagEl.style.display='none';
     showOptions(correct);
@@ -140,8 +153,8 @@ function showOptions(correct){
   const correctName=correct.name.common;
   const opts=[correctName];
   while(opts.length<3){
-    const rand=countries[Math.floor(Math.random()*countries.length)].name.common;
-    if(!opts.includes(rand)) opts.push(rand);
+    const randName=countries[Math.floor(Math.random()*countries.length)].name.common;
+    if(!opts.includes(randName)) opts.push(randName);
   }
   opts.sort(()=>Math.random()-0.5);
   opts.forEach(name=>{
@@ -150,7 +163,7 @@ function showOptions(correct){
     btn.className='option fade';
     btn.onclick=()=>{
       if(name===correctName){
-        btn.style.background= 'var(--correct)';
+        btn.style.background='var(--correct)';
         score++;
         scoreEl.textContent="النتيجة: "+score;
       } else {
@@ -165,7 +178,8 @@ function showOptions(correct){
 function disableAll(){
   document.querySelectorAll('.option').forEach(b=>b.disabled=true);
 }
-loadCountries();
+
+window.addEventListener('load',loadCountries);
 </script>
 </body>
 </html>
