@@ -12,23 +12,26 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <!-- Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
       --bg:#0b0f14;
       --panel:#11161a;
       --accent:#2bd4c8;
+      --accent-dark:#1fa89e;
       --muted:#9aa6ad;
       --card:#172026;
+      --text:#e7f6f4;
+      --shadow: 0 8px 30px rgba(0,0,0,0.4);
     }
 
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:"Cairo",sans-serif;
-      background:linear-gradient(180deg,#071014 0%, #0b1216 100%);
-      color:#e7f6f4;
+      background:linear-gradient(135deg, #071014 0%, #0b1216 100%);
+      color:var(--text);
       height:100vh;
       display:flex;
       flex-direction:column;
@@ -36,103 +39,318 @@
     }
 
     header{
-      padding:12px 18px;
-      background:rgba(0,0,0,0.25);
-      border-bottom:1px solid rgba(255,255,255,0.03);
+      padding:16px 24px;
+      background:rgba(11, 15, 20, 0.85);
+      border-bottom:1px solid rgba(255,255,255,0.05);
       flex-shrink: 0;
+      box-shadow: var(--shadow);
+      z-index: 10;
     }
-    header h1{margin:0;font-size:18px}
-    header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      font-size: 28px;
+    }
+    .logo-text h1{
+      margin:0;
+      font-size:20px;
+      font-weight: 700;
+    }
+    .logo-text p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .header-controls {
+      display: flex;
+      gap: 12px;
+    }
+    .header-btn {
+      background: rgba(43, 212, 200, 0.1);
+      border: 1px solid rgba(43, 212, 200, 0.2);
+      color: var(--accent);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    .header-btn:hover {
+      background: rgba(43, 212, 200, 0.2);
+    }
 
     main{
       display:flex;
-      gap:10px;
-      height:calc(100vh - 74px);
-      padding:10px;
+      gap:16px;
+      height:calc(100vh - 80px);
+      padding:16px;
       flex: 1;
       min-height: 0;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     /* Sidebar */
     #sidebar{
-      width:320px;
+      width:340px;
       background:var(--panel);
-      border-radius:12px;
-      padding:12px;
-      box-shadow:0 6px 20px rgba(0,0,0,0.5);
+      border-radius:16px;
+      padding:16px;
+      box-shadow: var(--shadow);
       overflow:auto;
       flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(255,255,255,0.03);
     }
-    .controls{display:flex;gap:8px;margin-bottom:8px}
+    .sidebar-header {
+      margin-bottom: 16px;
+    }
+    .sidebar-header h2 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .sidebar-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .controls{display:flex;gap:10px;margin-bottom:16px}
     #search{
-      flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);
-      background:transparent;color:inherit;
+      flex:1;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.06);
+      background:rgba(0,0,0,0.2);
+      color:inherit;
+      font-family: inherit;
+      transition: all 0.3s ease;
     }
-    #region-filter{padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
+    #search:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(43, 212, 200, 0.1);
+    }
+    #region-filter{
+      padding:12px;
+      border-radius:10px;
+      background:rgba(0,0,0,0.2);
+      border:1px solid rgba(255,255,255,0.06);
+      color:inherit;
+      font-family: inherit;
+      cursor: pointer;
+    }
 
-    #list-container{max-height:calc(100% - 60px);overflow:auto}
-    #country-list{list-style:none;padding:0;margin:0}
+    #list-container{
+      flex: 1;
+      overflow:auto;
+      border-radius: 10px;
+    }
+    #country-list{
+      list-style:none;
+      padding:0;
+      margin:0;
+    }
     #country-list li{
-      padding:8px;border-radius:8px;margin-bottom:6px;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
-      display:flex;align-items:center;gap:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.02);
+      padding:12px;
+      border-radius:10px;
+      margin-bottom:8px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+      display:flex;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,0.03);
       transition: all 0.2s ease;
     }
     #country-list li:hover {
       background: rgba(43, 212, 200, 0.1);
-      border-color: rgba(43, 212, 200, 0.3);
+      border-color: rgba(43, 212, 200, 0.2);
+      transform: translateY(-2px);
     }
-    .country-flag-thumb{width:36px;height:24px;border-radius:4px;object-fit:cover;border:1px solid rgba(0,0,0,0.4)}
+    .country-flag-thumb{
+      width:40px;
+      height:26px;
+      border-radius:5px;
+      object-fit:cover;
+      border:1px solid rgba(0,0,0,0.3);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
 
     /* Globe */
     #globe-container{
       flex:1;
-      border-radius:12px;
+      border-radius:16px;
       overflow:hidden;
       position:relative;
       min-width: 0;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.03);
     }
-    #globe{height:100%;width:100%}
+    #globe{
+      height:100%;
+      width:100%;
+      background: #071014;
+    }
     #globe-info {
       position: absolute;
-      bottom: 10px;
-      left: 10px;
+      bottom: 16px;
+      left: 16px;
       background: rgba(0,0,0,0.7);
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
       color: var(--muted);
       z-index: 10;
+      backdrop-filter: blur(5px);
+    }
+    .globe-controls {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .globe-btn {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+    .globe-btn:hover {
+      background: rgba(43, 212, 200, 0.2);
+      border-color: var(--accent);
     }
 
     /* Modal */
     #country-modal.hidden{display:none}
     #country-modal{
-      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999;
-      background:linear-gradient(180deg, rgba(2,6,8,0.6), rgba(2,6,8,0.6));
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      background: rgba(2,6,8,0.8);
+      backdrop-filter: blur(5px);
     }
     .modal-card{
-      width:380px;background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
-      box-shadow:0 12px 40px rgba(0,0,0,0.6);position:relative;text-align:right;
+      width:420px;
+      background:var(--card);
+      padding:20px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.05);
+      box-shadow:0 20px 60px rgba(0,0,0,0.6);
+      position:relative;
+      text-align:right;
       max-height: 90vh;
       overflow-y: auto;
     }
-    #close-modal{position:absolute;left:12px;top:12px;background:#ff5f5f;border:0;color:white;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer}
-    #modal-flag{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:10px}
-    .modal-card h2{margin:0 0 8px 0}
-    .modal-card p{margin:6px 0;color:var(--muted);font-size:14px}
-    #modal-more{display:inline-block;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--accent);color:#012; text-decoration:none;font-weight:600}
+    #close-modal{
+      position:absolute;
+      left:16px;
+      top:16px;
+      background:#ff5f5f;
+      border:0;
+      color:white;
+      border-radius:50%;
+      width:36px;
+      height:36px;
+      font-size:20px;
+      cursor:pointer;
+      transition: all 0.3s ease;
+    }
+    #close-modal:hover {
+      background: #ff3b3b;
+      transform: scale(1.1);
+    }
+    #modal-flag{
+      width:100%;
+      height:180px;
+      object-fit:cover;
+      border-radius:10px;
+      margin-bottom:16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .modal-card h2{
+      margin:0 0 12px 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .modal-card p{
+      margin:8px 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height: 1.5;
+    }
+    .modal-card strong {
+      color: var(--text);
+    }
+    #modal-more{
+      display:inline-block;
+      margin-top:12px;
+      padding:10px 16px;
+      border-radius:10px;
+      background:var(--accent);
+      color:#012;
+      text-decoration:none;
+      font-weight:600;
+      text-align: center;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    #modal-more:hover {
+      background: var(--accent-dark);
+      transform: translateY(-2px);
+    }
 
     /* Responsive */
     @media (max-width: 1200px) {
+      main {
+        gap: 12px;
+        padding: 12px;
+      }
+      
       #sidebar {
-        width: 280px;
+        width: 300px;
       }
     }
     
     @media (max-width: 900px){
+      .header-content {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+      
       main {
         flex-direction: column;
         height: auto;
+        gap: 12px;
       }
       
       #sidebar {
@@ -146,17 +364,32 @@
     }
     
     @media (max-width: 600px){
-      header h1 {
-        font-size: 16px;
+      header {
+        padding: 12px 16px;
       }
       
-      header p {
+      .logo-text h1 {
+        font-size: 18px;
+      }
+      
+      .logo-text p {
         font-size: 12px;
+      }
+      
+      .header-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+      
+      main {
+        padding: 10px;
+        gap: 10px;
       }
       
       .modal-card {
         width: 95%;
-        padding: 12px;
+        padding: 16px;
+        margin: 10px;
       }
       
       .controls {
@@ -166,12 +399,15 @@
     
     @media (max-width: 400px){
       main {
-        padding: 5px;
-        gap: 5px;
+        padding: 8px;
       }
       
       #sidebar {
-        padding: 8px;
+        padding: 12px;
+      }
+      
+      #country-list li {
+        padding: 10px;
       }
     }
 
@@ -181,36 +417,49 @@
       color: white;
       font-family: 'Cairo', sans-serif;
       font-size: 12px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+      font-weight: 500;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
       pointer-events: none;
       white-space: nowrap;
-      transition: opacity 0.3s;
+      transition: all 0.3s ease;
       z-index: 5;
+      background: rgba(0,0,0,0.5);
+      padding: 2px 6px;
+      border-radius: 4px;
+      backdrop-filter: blur(2px);
     }
     
     .country-label.highlight {
       color: var(--accent);
-      font-weight: bold;
+      font-weight: 700;
       font-size: 14px;
-      text-shadow: 0 0 8px rgba(43, 212, 200, 0.8);
+      text-shadow: 0 0 10px rgba(43, 212, 200, 0.8);
+      background: rgba(0,0,0,0.7);
+      transform: scale(1.1);
     }
     
     /* زر القائمة المتنقلة للشاشات الصغيرة */
     #mobile-menu-toggle {
       display: none;
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 16px;
+      right: 16px;
       background: var(--accent);
       border: none;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       color: #012;
       font-size: 20px;
       cursor: pointer;
       z-index: 100;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+    
+    #mobile-menu-toggle:hover {
+      background: var(--accent-dark);
+      transform: scale(1.1);
     }
     
     @media (max-width: 900px) {
@@ -222,18 +471,58 @@
         display: none;
       }
     }
+
+    /* مؤشر التحميل */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(43, 212, 200, 0.2);
+      border-left: 4px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>🌍 GeoWorld — خريطة العالم التفاعلية ثلاثية الأبعاد</h1>
-    <p>اضغط على أي دولة لعرض العلم، الموقع الجغرافي، معلومات أساسية وتصنيف تقديري.</p>
+    <div class="header-content">
+      <div class="logo">
+        <div class="logo-icon">🌍</div>
+        <div class="logo-text">
+          <h1>GeoWorld — خريطة العالم التفاعلية</h1>
+          <p>استكشف العالم بضغطة زر - اضغط على أي دولة لعرض معلوماتها</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <button class="header-btn" id="reset-view">إعادة تعيين العرض</button>
+        <button class="header-btn" id="toggle-labels">إظهار/إخفاء الأسماء</button>
+      </div>
+    </div>
   </header>
 
   <main>
     <button id="mobile-menu-toggle">☰</button>
     
     <aside id="sidebar">
+      <div class="sidebar-header">
+        <h2>قائمة الدول</h2>
+        <p>ابحث عن دولة أو قم بتصفية النتائج حسب المنطقة</p>
+      </div>
+      
       <div class="controls">
         <input id="search" type="search" placeholder="ابحث عن دولة بالاسم..." />
         <select id="region-filter">
@@ -248,12 +537,20 @@
       </div>
 
       <div id="list-container">
-        <p class="hint">انتظر تحميل البيانات...</p>
-        <ul id="country-list"></ul>
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>جاري تحميل بيانات الدول...</p>
+        </div>
+        <ul id="country-list" style="display: none;"></ul>
       </div>
     </aside>
 
     <section id="globe-container">
+      <div class="globe-controls">
+        <button class="globe-btn" id="zoom-in" title="تكبير">+</button>
+        <button class="globe-btn" id="zoom-out" title="تصغير">-</button>
+        <button class="globe-btn" id="reset-rotation" title="إعادة التدوير">↻</button>
+      </div>
       <div id="globe"></div>
       <div id="globe-info">استخدم الماوس للتحكم في الكرة الأرضية: تدوير، تكبير/تصغير</div>
     </section>
@@ -265,13 +562,13 @@
       <button id="close-modal" title="إغلاق">×</button>
       <img id="modal-flag" alt="علم الدولة" />
       <h2 id="modal-name"></h2>
-      <p><strong>📍 الموقع الجغرافي (Region / Subregion):</strong> <span id="modal-region"></span></p>
+      <p><strong>📍 الموقع الجغرافي:</strong> <span id="modal-region"></span></p>
       <p><strong>🏙️ العاصمة:</strong> <span id="modal-capital"></span></p>
       <p><strong>👥 السكان:</strong> <span id="modal-population"></span></p>
       <p><strong>📏 المساحة (كم²):</strong> <span id="modal-area"></span></p>
       <p><strong>💱 العملة:</strong> <span id="modal-currency"></span></p>
       <p><strong>📝 اللغات:</strong> <span id="modal-languages"></span></p>
-      <p><strong>📖 نبذة (موجزة):</strong> <span id="modal-note"></span></p>
+      <p><strong>📖 نبذة موجزة:</strong> <span id="modal-note"></span></p>
       <p><strong>⚖️ التصنيف (تقديري):</strong> <span id="modal-classification"></span></p>
       <a id="modal-more" target="_blank" rel="noopener">عرض معلومات إضافية (REST Countries)</a>
     </div>
@@ -283,6 +580,7 @@
     let countriesData = [];
     let countryObjects = [];
     let countryLabels = [];
+    let labelsVisible = true;
 
     function initGlobe() {
       // إنشاء المشهد
@@ -290,19 +588,24 @@
       scene.background = new THREE.Color(0x071014);
 
       // إنشاء الكاميرا
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.z = 300;
+      const container = document.getElementById('globe');
+      camera = new THREE.PerspectiveCamera(60, container.offsetWidth / container.offsetHeight, 0.1, 2000);
+      camera.position.z = 400;
 
       // إنشاء العارض
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(document.getElementById('globe').offsetWidth, document.getElementById('globe').offsetHeight);
-      document.getElementById('globe').appendChild(renderer.domElement);
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(container.offsetWidth, container.offsetHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
 
       // إضافة عناصر التحكم
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.rotateSpeed = 0.5;
+      controls.minDistance = 200;
+      controls.maxDistance = 800;
+      controls.autoRotate = false;
 
       // إضافة الضوء
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -361,15 +664,22 @@
           drawCountryBorders(geo);
           createCountryLabels(geo);
           populateCountryList(geo.features);
+          
+          // إخفاء مؤشر التحميل وإظهار القائمة
+          document.querySelector('.loading').style.display = 'none';
+          document.getElementById('country-list').style.display = 'block';
         })
         .catch(err => {
           console.error('فشل تحميل GeoJSON:', err);
-          alert('حدث خطأ في تحميل بيانات حدود الدول. تأكد من اتصالك بالإنترنت.');
+          document.querySelector('.loading p').textContent = 'حدث خطأ في تحميل البيانات. تأكد من اتصالك بالإنترنت.';
         });
     }
 
     function drawCountryBorders(geoData) {
-      const lineMaterial = new THREE.LineBasicMaterial({ color: 0x2bd4c8 });
+      const lineMaterial = new THREE.LineBasicMaterial({ 
+        color: 0x2bd4c8,
+        linewidth: 1
+      });
       
       geoData.features.forEach(feature => {
         if (feature.geometry.type === 'Polygon') {
@@ -451,6 +761,8 @@
 
     // تحديث مواقع أسماء الدول بناءً على موضع الكاميرا
     function updateLabelPositions() {
+      if (!labelsVisible) return;
+      
       countryLabels.forEach(labelInfo => {
         const label = labelInfo.element;
         const center = labelInfo.center;
@@ -506,6 +818,11 @@
     const regionFilter = document.getElementById('region-filter');
     const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     const sidebar = document.getElementById('sidebar');
+    const resetViewBtn = document.getElementById('reset-view');
+    const toggleLabelsBtn = document.getElementById('toggle-labels');
+    const zoomInBtn = document.getElementById('zoom-in');
+    const zoomOutBtn = document.getElementById('zoom-out');
+    const resetRotationBtn = document.getElementById('reset-rotation');
 
     const modal = document.getElementById('country-modal');
     const closeModalBtn = document.getElementById('close-modal');
@@ -656,7 +973,7 @@
 
       // رابط للمزيد
       modalMore.href = rc.maps && rc.maps.googleMaps ? rc.maps.googleMaps : `https://restcountries.com/`;
-      modalMore.textContent = 'عرض صفحة REST Countries (مصدر البيانات)';
+      modalMore.textContent = 'عرض معلومات إضافية (REST Countries)';
 
       // إظهار المودال
       modal.classList.remove('hidden');
@@ -730,6 +1047,11 @@
           // عند الضغط على اسم الدولة في القائمة — نوجه الكرة الأرضية لموقع الدولة
           focusOnCountry(item.feature);
           onCountryClick(item.feature);
+          
+          // إغلاق القائمة الجانبية على الشاشات الصغيرة
+          if (window.innerWidth <= 900) {
+            sidebar.classList.add('hidden-mobile');
+          }
         });
         countryListEl.appendChild(li);
       });
@@ -869,14 +1191,44 @@
     });
 
     function onWindowResize() {
-      camera.aspect = document.getElementById('globe').offsetWidth / document.getElementById('globe').offsetHeight;
+      const container = document.getElementById('globe');
+      camera.aspect = container.offsetWidth / container.offsetHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(document.getElementById('globe').offsetWidth, document.getElementById('globe').offsetHeight);
+      renderer.setSize(container.offsetWidth, container.offsetHeight);
     }
     
     // تبديل القائمة الجانبية على الشاشات الصغيرة
     mobileMenuToggle.addEventListener('click', function() {
       sidebar.classList.toggle('hidden-mobile');
+    });
+    
+    // إعادة تعيين العرض
+    resetViewBtn.addEventListener('click', function() {
+      controls.reset();
+      camera.position.z = 400;
+    });
+    
+    // تبديل إظهار/إخفاء أسماء الدول
+    toggleLabelsBtn.addEventListener('click', function() {
+      labelsVisible = !labelsVisible;
+      countryLabels.forEach(labelInfo => {
+        labelInfo.element.style.display = labelsVisible ? 'block' : 'none';
+      });
+      toggleLabelsBtn.textContent = labelsVisible ? 'إخفاء الأسماء' : 'إظهار الأسماء';
+    });
+    
+    // التحكم في التكبير والتصغير
+    zoomInBtn.addEventListener('click', function() {
+      controls.dollyOut(0.5);
+    });
+    
+    zoomOutBtn.addEventListener('click', function() {
+      controls.dollyIn(0.5);
+    });
+    
+    // إعادة التدوير
+    resetRotationBtn.addEventListener('click', function() {
+      controls.reset();
     });
   </script>
 </body>
