@@ -1,606 +1,175 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>GeoWorld — خريطة العالم التفاعلية ثلاثية الأبعاد (محسنة)</title>
+  <title>🌍 خريطة العالم التفاعلية</title>
 
-  <!-- Three.js (مستقر) -->
+  <!-- مكتبة Three.js (الكرة الأرضية) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- مكتبة Leaflet (الخريطة 2D) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
-    :root{
-      --bg:#0b0f14;
-      --panel:#11161a;
-      --accent:#2bd4c8;
-      --muted:#9aa6ad;
-      --card:#172026;
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: "Cairo", sans-serif;
+      background: radial-gradient(ellipse at bottom, #020111 0%, #000000 100%);
+      color: white;
     }
-    *{box-sizing:border-box}
-    body{
-      margin:0;font-family:"Cairo",sans-serif;background:linear-gradient(180deg,#071014 0%, #0b1216 100%);color:#e7f6f4;
-      height:100vh;display:flex;flex-direction:column;overflow:hidden;
+    #switch-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      padding: 10px 18px;
+      background: rgba(0,0,0,0.6);
+      color: #00ffff;
+      border: 1px solid #00ffff;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 10;
+      font-weight: bold;
+      transition: 0.3s;
     }
-    header{padding:12px 18px;background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.03)}
-    header h1{margin:0;font-size:18px} header p{margin:4px 0 0;color:var(--muted);font-size:13px}
-
-    main{display:flex;gap:10px;height:calc(100vh - 74px);padding:10px}
-    #sidebar{width:320px;background:var(--panel);border-radius:12px;padding:12px;box-shadow:0 6px 20px rgba(0,0,0,0.5);overflow:auto}
-    .controls{display:flex;gap:8px;margin-bottom:8px}
-    #search{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
-    #region-filter{padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
-
-    #list-container{max-height:calc(100% - 60px);overflow:auto}
-    #country-list{list-style:none;padding:0;margin:0}
-    #country-list li{padding:8px;border-radius:8px;margin-bottom:6px;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);display:flex;align-items:center;gap:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.02)}
-    .country-flag-thumb{width:36px;height:24px;border-radius:4px;object-fit:cover;border:1px solid rgba(0,0,0,0.4)}
-
-    #globe-container{flex:1;border-radius:12px;overflow:hidden;position:relative}
-    #globe{height:100%;width:100%}
-    #globe-info{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.7);padding:8px 12px;border-radius:8px;font-size:12px;color:var(--muted)}
-
-    /* Loading overlay */
-    #loading-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(2,6,8,0.6), rgba(2,6,8,0.6));display:flex;align-items:center;justify-content:center;z-index:999}
-    .spinner{width:64px;height:64px;border-radius:50%;border:6px solid rgba(255,255,255,0.08);border-top-color:var(--accent);animation:spin 1s linear infinite}
-    @keyframes spin {to{transform:rotate(360deg)}}
-
-    /* Modal */
-    #country-modal.hidden{display:none}
-    #country-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999;background:linear-gradient(180deg, rgba(2,6,8,0.6), rgba(2,6,8,0.6))}
-    .modal-card{width:420px;background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 12px 40px rgba(0,0,0,0.6);position:relative;text-align:right}
-    #close-modal{position:absolute;left:12px;top:12px;background:#ff5f5f;border:0;color:white;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer}
-    #modal-flag{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:10px}
-    .modal-card h2{margin:0 0 8px 0}
-    .modal-card p{margin:6px 0;color:var(--muted);font-size:14px}
-    #modal-more{display:inline-block;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--accent);color:#012; text-decoration:none;font-weight:600}
-
-    /* Responsive */
-    @media (max-width:900px){#sidebar{display:none}.modal-card{width:92%}}
+    #switch-btn:hover { background: rgba(0,255,255,0.2); }
+    #globe, #map {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    #map { display: none; }
+    #info-box {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.6);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #b7f5ff;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🌍 GeoWorld — خريطة العالم التفاعلية ثلاثية الأبعاد (محسنة)</h1>
-    <p>اضغط على أي دولة لعرض العلم، معلومات أساسية وتصنيف تقديري — الكود محدث لجعل التفاعل موثوق.</p>
-  </header>
-
-  <main>
-    <aside id="sidebar">
-      <div class="controls">
-        <input id="search" type="search" placeholder="ابحث عن دولة بالاسم..." />
-        <select id="region-filter">
-          <option value="">كل القارات / المناطق</option>
-          <option value="Africa">أفريقيا</option>
-          <option value="Americas">الأمريكيتان</option>
-          <option value="Asia">آسيا</option>
-          <option value="Europe">أوروبا</option>
-          <option value="Oceania">أوقيانوسيا</option>
-          <option value="Antarctic">القطب</option>
-        </select>
-      </div>
-
-      <div id="list-container">
-        <p class="hint" id="hint-text">جارٍ التحميل...</p>
-        <ul id="country-list"></ul>
-      </div>
-    </aside>
-
-    <section id="globe-container">
-      <div id="globe"></div>
-      <div id="globe-info">استخدم الفأرة/اللمس: تدوير، تكبير/تصغير</div>
-
-      <div id="loading-overlay" aria-hidden="false">
-        <div>
-          <div class="spinner" role="progressbar" aria-label="جار التحميل"></div>
-          <div style="text-align:center;margin-top:10px;color:var(--muted)">تحميل الخرائط والبيانات...</div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <div id="country-modal" class="hidden" role="dialog" aria-modal="true">
-    <div class="modal-card">
-      <button id="close-modal" title="إغلاق">×</button>
-      <img id="modal-flag" alt="علم الدولة" />
-      <h2 id="modal-name"></h2>
-      <p><strong>📍 المنطقة:</strong> <span id="modal-region"></span></p>
-      <p><strong>🏙️ العاصمة:</strong> <span id="modal-capital"></span></p>
-      <p><strong>👥 السكان:</strong> <span id="modal-population"></span></p>
-      <p><strong>📏 المساحة (كم²):</strong> <span id="modal-area"></span></p>
-      <p><strong>💱 العملة:</strong> <span id="modal-currency"></span></p>
-      <p><strong>📝 اللغات:</strong> <span id="modal-languages"></span></p>
-      <p><strong>📖 نبذة:</strong> <span id="modal-note"></span></p>
-      <p><strong>⚖️ التصنيف:</strong> <span id="modal-classification"></span></p>
-      <a id="modal-more" target="_blank" rel="noopener">عرض معلومات إضافية (REST Countries)</a>
-    </div>
-  </div>
+  <button id="switch-btn">🗺️ عرض الخريطة 2D</button>
+  <div id="globe"></div>
+  <div id="map"></div>
+  <div id="info-box">اضغط على أي دولة لمعرفة اسمها</div>
 
   <script>
-    // ==== متغيرات المشهد ====
-    let scene, camera, renderer, globeMesh, controls;
-    let countriesGeo = null;
-    let restCountriesMap = new Map(); // keyed by cca2/cca3/name
-    let clickableSpheres = []; // نقاط قابلة للنقر (مرتبطة بدولة)
-    let borderLines = [];
-    const clickableGroup = new THREE.Group();
+    // ========= إعداد المشهد 3D =========
+    let scene, camera, renderer, globe, controls, stars;
+    const container = document.getElementById("globe");
 
-    // عناصر DOM
-    const countryListEl = document.getElementById('country-list');
-    const searchInput = document.getElementById('search');
-    const regionFilter = document.getElementById('region-filter');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const hintText = document.getElementById('hint-text');
-
-    const modal = document.getElementById('country-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const modalFlag = document.getElementById('modal-flag');
-    const modalName = document.getElementById('modal-name');
-    const modalRegion = document.getElementById('modal-region');
-    const modalCapital = document.getElementById('modal-capital');
-    const modalPopulation = document.getElementById('modal-population');
-    const modalArea = document.getElementById('modal-area');
-    const modalCurrency = document.getElementById('modal-currency');
-    const modalLanguages = document.getElementById('modal-languages');
-    const modalNote = document.getElementById('modal-note');
-    const modalClassification = document.getElementById('modal-classification');
-    const modalMore = document.getElementById('modal-more');
-
-    // Arabic mapping for some subregions (optional)
-    const subregionArabic = {
-      "Southern Asia":"جنوب آسيا","Western Asia":"غرب آسيا","Central Asia":"آسيا الوسطى","South-Eastern Asia":"جنوب شرق آسيا",
-      "Eastern Europe":"شرق أوروبا","Northern Europe":"شمال أوروبا","Southern Europe":"جنوب أوروبا","Western Europe":"غرب أوروبا",
-      "Northern Africa":"شمال أفريقيا","Sub-Saharan Africa":"أفريقيا جنوب الصحراء","Caribbean":"الكاريبي","Central America":"أمريكا الوسطى",
-      "South America":"أمريكا الجنوبية","Micronesia":"ميكرونيزيا","Polynesia":"بولنيسيا","Melanesia":"ميلانيسيا","Australia and New Zealand":"أستراليا ونيوزيلندا",
-      "Antarctica":"القطب الجنوبي"
-    };
-
-    // === تهيئة المشهد ===
-    function initGlobe(){
+    function initGlobe() {
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x071014);
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 0, 2.5);
 
-      const container = document.getElementById('globe');
-      const w = container.offsetWidth;
-      const h = container.offsetHeight;
-
-      camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 2000);
-      camera.position.set(0, 0, 350);
-
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setSize(w, h);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
       container.appendChild(renderer.domElement);
 
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
-      controls.dampingFactor = 0.08;
-      controls.rotateSpeed = 0.6;
-      controls.zoomSpeed = 1.2;
-      controls.minDistance = 150;
-      controls.maxDistance = 700;
 
-      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-      scene.add(ambient);
-      const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-      dir.position.set(5,3,5);
-      scene.add(dir);
+      // إضاءة
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5, 3, 5);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0x404040));
 
-      // الكرة الأرضية (نسيج منخفض الدقة ثم يمكن تحسين)
-      const sphereGeo = new THREE.SphereGeometry(100, 64, 64);
+      // كرة الأرض
       const texLoader = new THREE.TextureLoader();
-      texLoader.load(
-        'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
-        (tex) => {
-          const mat = new THREE.MeshPhongMaterial({ map: tex, shininess: 5, specular: new THREE.Color(0x222222) });
-          globeMesh = new THREE.Mesh(sphereGeo, mat);
-          scene.add(globeMesh);
+      const earthTexture = texLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/land_ocean_ice_cloud_2048.jpg');
+      const sphereGeo = new THREE.SphereGeometry(1, 64, 64);
+      const sphereMat = new THREE.MeshPhongMaterial({ map: earthTexture });
+      globe = new THREE.Mesh(sphereGeo, sphereMat);
+      scene.add(globe);
 
-          // سحابة خفيفة
-          texLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png', (cloudTex) => {
-            const cloudMat = new THREE.MeshPhongMaterial({ map: cloudTex, transparent: true, opacity: 0.35 });
-            const cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(101.2, 64, 64), cloudMat);
-            scene.add(cloudMesh);
-          });
-        },
-        undefined,
-        (err) => { console.warn('خطأ تحميل نسيج الأرض', err); }
-      );
-
-      // مجموعة للنقاط القابلة للنقر
-      scene.add(clickableGroup);
+      // نجوم متحركة (المجرة)
+      const starGeo = new THREE.SphereGeometry(90, 64, 64);
+      const starMat = new THREE.MeshBasicMaterial({
+        map: texLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/galaxy_starfield.png'),
+        side: THREE.BackSide
+      });
+      stars = new THREE.Mesh(starGeo, starMat);
+      scene.add(stars);
 
       animate();
     }
 
-    function animate(){
+    function animate() {
       requestAnimationFrame(animate);
+      globe.rotation.y += 0.0008;
+      stars.rotation.y += 0.0002;
       controls.update();
       renderer.render(scene, camera);
     }
 
-    // === تحميل بيانات REST Countries و GeoJSON ===
-    async function loadAllData(){
-      try{
-        showLoading(true, 'جاري تحميل بيانات الدول (REST Countries)...');
-        // 1) load rest countries (helps with region info & flags)
-        const r1 = await fetch('https://restcountries.com/v3.1/all');
-        if(!r1.ok) throw new Error('فشل جلب REST Countries');
-        const rest = await r1.json();
-        // map by cca2, cca3 and common name (lowercase)
-        rest.forEach(item => {
-          if(item.cca2) restCountriesMap.set(item.cca2.toUpperCase(), item);
-          if(item.cca3) restCountriesMap.set(item.cca3.toUpperCase(), item);
-          if(item.name && item.name.common) restCountriesMap.set(item.name.common.toLowerCase(), item);
-        });
-
-        showLoading(true, 'جاري تحميل GeoJSON لحدود الدول...');
-        // 2) load world geojson (broad public source)
-        const GEOJSON_URL = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
-        const r2 = await fetch(GEOJSON_URL);
-        if(!r2.ok) throw new Error('فشل جلب GeoJSON');
-        const geo = await r2.json();
-        countriesGeo = geo.features;
-
-        // process each feature: compute centroid and create clickable point
-        processFeatures(countriesGeo);
-
-        // populate UI list (with restCountries data when available)
-        populateCountryList(countriesGeo);
-
-        // hide loading
-        showLoading(false);
-        hintText.textContent = 'اضغط على دولة في القائمة أو انقر على الكرة.';
-      } catch(err){
-        console.error('loadAllData error', err);
-        showLoading(false);
-        hintText.textContent = 'حدث خطأ في تحميل البيانات. تأكد من اتصال الإنترنت وحاول إعادة التحميل.';
-        alert('خطأ في تحميل بيانات الخرائط أو الدول. تفقد الاتصال أو إعادة المحاولة.');
-      }
-    }
-
-    function showLoading(show, txt){
-      loadingOverlay.style.display = show ? 'flex' : 'none';
-      if(txt) {
-        const el = loadingOverlay.querySelector('div > div:last-child');
-        if(el) el.textContent = txt;
-      }
-    }
-
-    // === مساعدة لحساب مركز تقريبي من إحداثيات الـ GeoJSON ===
-    function computeCentroidOfCoords(coords){
-      // coords can be nested arrays (Polygon or MultiPolygon). We'll collect all numeric pairs and average them.
-      const pts = [];
-      function walk(a){
-        if(!a) return;
-        if(typeof a[0] === 'number' && typeof a[1] === 'number') { pts.push(a); return; }
-        for(let i=0;i<a.length;i++) walk(a[i]);
-      }
-      walk(coords);
-      if(pts.length === 0) return null;
-      let sumLon=0, sumLat=0;
-      pts.forEach(p => { sumLon += p[0]; sumLat += p[1]; });
-      return [sumLat / pts.length, sumLon / pts.length]; // [lat, lon]
-    }
-
-    function latLonToVector3(lat, lon, radius){
-      const phi = (90 - lat) * (Math.PI / 180);
-      const theta = (lon + 180) * (Math.PI / 180);
-      const x = -(radius * Math.sin(phi) * Math.cos(theta));
-      const z = radius * Math.sin(phi) * Math.sin(theta);
-      const y = radius * Math.cos(phi);
-      return new THREE.Vector3(x,y,z);
-    }
-
-    // Create a slightly larger invisible sphere at centroid to act as clickable target
-    function createClickablePoint(lat, lon, countryIdentifier){
-      const pos = latLonToVector3(lat, lon, 101.2); // slightly above surface
-      const geometry = new THREE.SphereGeometry(2.6, 8, 8);
-      const material = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.001 }); // near-invisible but hittable
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.copy(pos);
-      mesh.userData = { countryIdentifier };
-      clickableGroup.add(mesh);
-      clickableSpheres.push(mesh);
-
-      // Also create a visible small marker for hover feedback (initially hidden)
-      const markerGeo = new THREE.SphereGeometry(1.6, 8, 8);
-      const markerMat = new THREE.MeshPhongMaterial({ color: 0x2bd4c8, transparent:true, opacity:0 });
-      const marker = new THREE.Mesh(markerGeo, markerMat);
-      marker.position.copy(pos);
-      marker.userData = { markerFor: mesh.id };
-      clickableGroup.add(marker);
-      mesh.userData.marker = marker;
-    }
-
-    // process features: compute centroid and create clickable point (and draw borders)
-    function processFeatures(features){
-      // draw borders (simpler lines) and create clickable points
-      const lineMat = new THREE.LineBasicMaterial({ color: 0x2bd4c8, linewidth:1 });
-      features.forEach(feat => {
-        try {
-          const geom = feat.geometry;
-          if(!geom) return;
-          // compute centroid from coords
-          const centroid = computeCentroidOfCoords(geom.coordinates);
-          if(centroid) {
-            // store computed centroid on feature for later use
-            feat._centroid = centroid; // [lat, lon]
-            // create clickable point, using a country identifier (prefer cca2/cca3/name)
-            let id = null;
-            const props = feat.properties || {};
-            id = (props.iso_a2 || props.ISO_A2 || props.ISO_A2 || props.iso_a3 || props.ISO_A3 || props.name || props.ADMIN || props.NAME);
-            createClickablePoint(centroid[0], centroid[1], String(id || props.name || '').trim());
-          }
-
-          // draw geometry outlines (skip extremely detailed polygons for performance)
-          if(geom.type === 'Polygon'){
-            geom.coordinates.forEach(polygon => {
-              const pts = polygon.map(coord => latLonToVector3(coord[1], coord[0], 100.5));
-              const buffer = new THREE.BufferGeometry().setFromPoints(pts);
-              const line = new THREE.Line(buffer, lineMat);
-              scene.add(line);
-              borderLines.push(line);
-            });
-          } else if(geom.type === 'MultiPolygon'){
-            geom.coordinates.forEach(multi => {
-              multi.forEach(polygon => {
-                const pts = polygon.map(coord => latLonToVector3(coord[1], coord[0], 100.5));
-                const buffer = new THREE.BufferGeometry().setFromPoints(pts);
-                const line = new THREE.Line(buffer, lineMat);
-                scene.add(line);
-                borderLines.push(line);
-              });
-            });
-          }
-        } catch(e){
-          // continue on failure of single feature
-        }
-      });
-    }
-
-    // === القائمة وفلترة القارة والبحث ===
-    function populateCountryList(features){
-      countryListEl.innerHTML = '';
-      // build an enriched array with names and region from REST Countries if possible
-      const arr = features.map(f => {
-        const props = f.properties || {};
-        const name = (props.name || props.ADMIN || props.NAME || 'غير معروف').trim();
-        // find rest country by iso code or name
-        let rest = null;
-        const iso2 = props.iso_a2 || props.ISO_A2 || props['ISO_A2'];
-        const iso3 = props.iso_a3 || props.ISO_A3 || props['ISO_A3'];
-        if(iso2 && restCountriesMap.has(iso2.toUpperCase())) rest = restCountriesMap.get(iso2.toUpperCase());
-        else if(iso3 && restCountriesMap.has(iso3.toUpperCase())) rest = restCountriesMap.get(iso3.toUpperCase());
-        else if(restCountriesMap.has(name.toLowerCase())) rest = restCountriesMap.get(name.toLowerCase());
-        return { name, props, feature: f, rest };
-      }).sort((a,b)=> a.name.localeCompare(b.name, 'ar'));
-
-      arr.forEach(item=>{
-        const li = document.createElement('li');
-        const img = document.createElement('img');
-        img.className = 'country-flag-thumb';
-        img.alt = `${item.name} علم`;
-        // flagcdn (use cca2 from rest data if available)
-        if(item.rest && item.rest.cca2) img.src = `https://flagcdn.com/w40/${item.rest.cca2.toLowerCase()}.png`;
-        else {
-          // try from props iso code
-          const iso2 = item.props.iso_a2 || item.props.ISO_A2;
-          if(iso2) img.src = `https://flagcdn.com/w40/${iso2.toLowerCase()}.png`;
-          else img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="24"></svg>';
-        }
-        const span = document.createElement('span');
-        span.textContent = item.name;
-        li.appendChild(img);
-        li.appendChild(span);
-        li.addEventListener('click', ()=>{
-          // focus and open modal
-          focusOnFeature(item.feature);
-          showCountryModal(item.feature);
-        });
-        countryListEl.appendChild(li);
-
-        // store rest data onto feature for fast access
-        if(item.rest) item.feature._rest = item.rest;
-      });
-    }
-
-    // filter
-    searchInput.addEventListener('input', filterList);
-    regionFilter.addEventListener('change', filterList);
-
-    function filterList(){
-      const q = searchInput.value.trim().toLowerCase();
-      const region = regionFilter.value;
-      const items = countryListEl.querySelectorAll('li');
-      items.forEach(li=>{
-        const txt = li.textContent.trim().toLowerCase();
-        let show = txt.includes(q);
-        if(show && region){
-          // tiny heuristic: find the corresponding feature by name
-          const name = li.textContent.split('\n')[0].trim();
-          const feature = Array.from(countriesGeo || []).find(f => {
-            const nm = (f.properties && (f.properties.name || f.properties.ADMIN || f.properties.NAME) || '').trim();
-            return nm === name;
-          });
-          if(feature){
-            const rest = feature._rest;
-            if(rest && rest.region) show = (rest.region === region);
-            else show = false; // if we cannot map region reliably, hide when region selected
-          } else show = false;
-        }
-        li.style.display = show ? 'flex' : 'none';
-      });
-    }
-
-    // === التركيز على دولة (تحريك الكاميرا) ===
-    function focusOnFeature(feature){
-      const center = feature._centroid || computeCentroidOfCoords(feature.geometry.coordinates);
-      if(!center) return;
-      const vec = latLonToVector3(center[0], center[1], 200);
-      // animate camera simply (no external tween lib)
-      camera.position.set(vec.x * 1.8, vec.y * 1.8, vec.z * 1.8);
-      controls.target.set(vec.x, vec.y, vec.z);
-    }
-
-    // === مودال باستخدام بيانات REST (أو حد أدنى) ===
-    function showCountryModal(feature){
-      const props = feature.properties || {};
-      const rest = feature._rest || null;
-      const commonName = (rest && (rest.name && (rest.name.common || rest.name.official))) || props.name || props.ADMIN || props.NAME || 'غير معروف';
-      modalName.textContent = commonName;
-
-      // Flag
-      if(rest && rest.flags) {
-        modalFlag.src = rest.flags.png || rest.flags.svg || '';
-        modalFlag.alt = `علم ${commonName}`;
-      } else {
-        modalFlag.src = '';
-        modalFlag.alt = '';
-      }
-
-      // region + subregion
-      let regionText = 'غير متوفر';
-      if(rest && (rest.region || rest.subregion)) {
-        regionText = (rest.region || '') + (rest.subregion ? (' — ' + (subregionArabic[rest.subregion] || rest.subregion)) : '');
-      } else if(props.region) regionText = props.region;
-      modalRegion.textContent = regionText;
-
-      modalCapital.textContent = (rest && rest.capital && rest.capital[0]) || 'غير متوفر';
-      modalPopulation.textContent = rest && rest.population ? numberWithCommas(rest.population) + ' نسمة' : 'غير متوفر';
-      modalArea.textContent = rest && rest.area ? numberWithCommas(Math.round(rest.area)) : 'غير متوفر';
-
-      if(rest && rest.currencies){
-        const curArr = Object.keys(rest.currencies).map(k => `${k} (${rest.currencies[k].name || ''})`);
-        modalCurrency.textContent = curArr.join(', ');
-      } else modalCurrency.textContent = 'غير متوفر';
-
-      modalLanguages.textContent = rest && rest.languages ? Object.values(rest.languages).join(', ') : 'غير متوفر';
-
-      // note
-      const noteParts = [];
-      if(rest && rest.independent === true) noteParts.push('دولة مستقلة');
-      if(rest && rest.unMember === false) noteParts.push('ليست عضوًا في الأمم المتحدة');
-      if(rest && rest.capital && rest.capital.length) noteParts.push(`عاصمتها ${rest.capital[0]}`);
-      modalNote.textContent = noteParts.length ? noteParts.join(' • ') : '—';
-
-      modalClassification.textContent = rest && rest.population ? estimateClassification(rest.population) : 'غير متوفر (تقديري)';
-
-      if(rest && rest.maps && rest.maps.googleMaps) {
-        modalMore.href = rest.maps.googleMaps;
-        modalMore.textContent = 'عرض صفحة REST Countries (مصدر البيانات)';
-      } else {
-        modalMore.href = 'https://restcountries.com/';
-        modalMore.textContent = 'REST Countries';
-      }
-
-      modal.classList.remove('hidden');
-    }
-
-    closeModalBtn.addEventListener('click', ()=> modal.classList.add('hidden'));
-    modal.addEventListener('click', (e)=> { if(e.target === modal) modal.classList.add('hidden'); });
-
-    // === مساعدة رقمية ===
-    function numberWithCommas(x){ if(!x && x !== 0) return x; return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
-    function estimateClassification(population){
-      const pop = Number(population || 0);
-      if(pop >= 100_000_000) return 'قوية (دولة كبيرة تعدادياً)';
-      if(pop >= 50_000_000) return 'قوية/كبيرة';
-      if(pop >= 10_000_000) return 'متوسطة';
-      if(pop >= 1_000_000) return 'صغيرة';
-      return 'هامشية (قليلة السكان)';
-    }
-
-    // === التفاعل بالماوس/اللمس: raycasting على النقاط القابلة للنقر ===
-    function addInteractivity(){
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
-
-      function getMousePos(event){
-        const rect = renderer.domElement.getBoundingClientRect();
-        const clientX = (event.touches && event.touches[0]) ? event.touches[0].clientX : event.clientX;
-        const clientY = (event.touches && event.touches[0]) ? event.touches[0].clientY : event.clientY;
-        mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-      }
-
-      function onPointerMove(e){
-        getMousePos(e);
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(clickableSpheres.concat(borderLines), true);
-        // reset all markers
-        clickableSpheres.forEach(s => { if(s.userData && s.userData.marker) s.userData.marker.material.opacity = 0; });
-        if(intersects.length > 0){
-          const first = intersects[0].object;
-          // find root clickable mesh (we used near-invisible mesh for clicks)
-          let target = first;
-          if(!target.userData || !target.userData.countryIdentifier){
-            // may be marker, try parent
-            if(target.userData && target.userData.markerFor){
-              // find mesh by id
-              const mesh = clickableSpheres.find(ms => ms.id === target.userData.markerFor);
-              if(mesh && mesh.userData.marker) mesh.userData.marker.material.opacity = 0.9;
-            }
-          } else {
-            if(target.userData.marker) target.userData.marker.material.opacity = 0.9;
-          }
-        }
-      }
-
-      function onClick(e){
-        getMousePos(e);
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(clickableSpheres, true);
-        if(intersects.length > 0){
-          const mesh = intersects[0].object;
-          const id = mesh.userData.countryIdentifier || '';
-          // find feature by matching various identifiers
-          const feature = (countriesGeo || []).find(f => {
-            const p = f.properties || {};
-            const name = (p.name || p.ADMIN || p.NAME || '').trim();
-            const iso2 = (p.iso_a2 || p.ISO_A2 || '').toString().toUpperCase();
-            const iso3 = (p.iso_a3 || p.ISO_A3 || '').toString().toUpperCase();
-            if(id && id.toUpperCase() === iso2) return true;
-            if(id && id.toUpperCase() === iso3) return true;
-            if(id && id.toLowerCase() === name.toLowerCase()) return true;
-            return false;
-          });
-          if(feature){
-            showCountryModal(feature);
-            focusOnFeature(feature);
-          } else {
-            // fallback: try look up in restCountriesMap by id/name
-            const rest = restCountriesMap.get((id || '').toLowerCase()) || restCountriesMap.get((id || '').toUpperCase());
-            if(rest){
-              // create a minimal fake feature with rest data attached
-              const fake = { properties: { name: rest.name.common }, _rest: rest, _centroid: null, geometry: {} };
-              showCountryModal(fake);
-            }
-          }
-        }
-      }
-
-      renderer.domElement.addEventListener('mousemove', onPointerMove);
-      renderer.domElement.addEventListener('click', onClick);
-      renderer.domElement.addEventListener('touchstart', (e)=> { onPointerMove(e); onClick(e); }, {passive:true});
-    }
-
-    // === تهيئة وإطلاق ===
-    window.addEventListener('load', async ()=>{
-      initGlobe();
-      await loadAllData();
-      addInteractivity();
-      window.addEventListener('resize', onWindowResize);
+    // ========= الخريطة 2D =========
+    const mapDiv = L.map('map', {
+      center: [20, 0],
+      zoom: 2,
+      worldCopyJump: true,
+      zoomControl: false,
     });
 
-    function onWindowResize(){
-      const container = document.getElementById('globe');
-      camera.aspect = container.offsetWidth / container.offsetHeight;
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 6,
+      attribution: '&copy; OpenStreetMap',
+    }).addTo(mapDiv);
+
+    // رسم حدود الدول (GeoJSON عام)
+    fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
+      .then(r => r.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: {
+            color: "#00ffff",
+            weight: 1,
+            fillOpacity: 0.1
+          },
+          onEachFeature: function(feature, layer) {
+            layer.on('click', function() {
+              const name = feature.properties.ADMIN || "غير معروف";
+              document.getElementById("info-box").textContent = `🌍 ${name}`;
+            });
+          }
+        }).addTo(mapDiv);
+      });
+
+    // ========= التبديل بين الوضعين =========
+    const switchBtn = document.getElementById("switch-btn");
+    const mapEl = document.getElementById("map");
+
+    let is3D = true;
+    switchBtn.addEventListener("click", () => {
+      if (is3D) {
+        container.style.display = "none";
+        mapEl.style.display = "block";
+        switchBtn.textContent = "🌌 عرض الكرة الأرضية 3D";
+      } else {
+        container.style.display = "block";
+        mapEl.style.display = "none";
+        switchBtn.textContent = "🗺️ عرض الخريطة 2D";
+      }
+      is3D = !is3D;
+    });
+
+    // ========= بدء التشغيل =========
+    initGlobe();
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(container.offsetWidth, container.offsetHeight);
-    }
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      mapDiv.invalidateSize();
+    });
   </script>
 </body>
 </html>
