@@ -1,175 +1,171 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>🌍 خريطة العالم التفاعلية — 3D + 2D</title>
-
-<!-- مكتبة Three.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
-<!-- مكتبة Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Zidan Flags Quiz</title>
 
 <style>
-:root { --accent:#00ffff; --panel:rgba(0,0,0,0.6); }
-body { margin:0; font-family:"Cairo",sans-serif; background:#000; color:#dff9ff; overflow:hidden; }
-#switch-btn {
-  position:fixed; top:15px; left:15px; z-index:9999;
-  padding:10px 16px; background:var(--panel); color:var(--accent);
-  border:1px solid var(--accent); border-radius:10px; cursor:pointer; font-weight:bold;
+:root {
+  --accent: #00ffff;
+  --bg1: #050c1c;
+  --bg2: #0b1e2b;
+  --correct: #00c853;
+  --wrong: #ff1744;
 }
-#switch-btn:hover { background:rgba(0,255,255,0.15); }
-
-#globe, #map { position:absolute; top:0; left:0; width:100%; height:100%; }
-#map { display:none; }
-
-#info-box {
-  position:fixed; top:15px; right:15px; width:280px;
-  background:var(--panel); padding:12px; border-radius:12px;
-  border:1px solid rgba(255,255,255,0.1); z-index:9999;
+body {
+  margin:0;
+  font-family:"Cairo",sans-serif;
+  background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+  color:#fff;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
 }
-#info-box img { width:100%; border-radius:8px; border:1px solid rgba(255,255,255,0.1); }
-#info-box h3 { margin:10px 0 6px; color:#00ffff; }
-.info { font-size:14px; margin:5px 0; }
+.logo {
+  font-size:2.2em;
+  font-weight:800;
+  letter-spacing:1px;
+  color:var(--accent);
+  text-shadow:0 0 10px var(--accent),0 0 20px var(--accent),0 0 40px var(--accent);
+  animation:glow 2s ease-in-out infinite alternate;
+  margin-bottom:10px;
+}
+@keyframes glow {
+  from { text-shadow:0 0 5px var(--accent),0 0 10px var(--accent);}
+  to { text-shadow:0 0 20px var(--accent),0 0 40px var(--accent);}
+}
+#game {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:15px;
+  box-shadow:0 0 25px rgba(0,255,255,0.15);
+  padding:20px;
+  width:90%;
+  max-width:420px;
+  text-align:center;
+}
+#flag {
+  width:220px;
+  height:140px;
+  border-radius:10px;
+  margin:15px auto;
+  box-shadow:0 0 15px rgba(0,255,255,0.3);
+  display:none;
+  transition:all 0.4s ease;
+}
+.options {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+button.option {
+  background:rgba(0,0,0,0.4);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:8px;
+  color:#fff;
+  padding:10px;
+  font-size:1em;
+  cursor:pointer;
+  transition:0.3s;
+}
+button.option:hover { background:rgba(255,255,255,0.1); }
+.score {
+  position:fixed;
+  top:15px;
+  left:20px;
+  font-weight:700;
+  color:var(--accent);
+  font-size:1.2em;
+  text-shadow:0 0 10px var(--accent);
+}
+.fade {
+  animation:fadein 0.6s ease;
+}
+@keyframes fadein {
+  from {opacity:0; transform:scale(0.9);}
+  to {opacity:1; transform:scale(1);}
+}
 </style>
 </head>
 <body>
-<button id="switch-btn">🗺️ عرض الخريطة 2D</button>
-<div id="globe"></div>
-<div id="map"></div>
-
-<div id="info-box">
-  <img id="flag" src="" alt="">
-  <h3 id="country-name">اضغط على دولة</h3>
-  <div class="info">العاصمة: <span id="capital">—</span></div>
-  <div class="info">السكان: <span id="population">—</span></div>
-  <div class="info">المساحة: <span id="area">—</span></div>
-  <div class="info">العملة: <span id="currency">—</span></div>
+<div class="score" id="score">النتيجة: 0</div>
+<div class="logo">🌍 ZIDAN Flags Quiz</div>
+<div id="game">
+  <img id="flag" src="" alt="Flag">
+  <div class="options" id="options"></div>
 </div>
 
 <script>
-let scene, camera, renderer, globe, controls, stars;
-let selectedCountry = null;
+const flagEl=document.getElementById('flag');
+const optionsEl=document.getElementById('options');
+const scoreEl=document.getElementById('score');
+let countries=[],current=0,score=0,used=[];
 
-const infoName = document.getElementById('country-name');
-const infoFlag = document.getElementById('flag');
-const infoCapital = document.getElementById('capital');
-const infoPopulation = document.getElementById('population');
-const infoArea = document.getElementById('area');
-const infoCurrency = document.getElementById('currency');
-
-function initGlobe(){
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.set(0,0,2.5);
-
-  renderer = new THREE.WebGLRenderer({ antialias:true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.getElementById('globe').appendChild(renderer.domElement);
-
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-
-  const light = new THREE.DirectionalLight(0xffffff,1);
-  light.position.set(5,3,5);
-  scene.add(light);
-  scene.add(new THREE.AmbientLight(0x404040));
-
-  const loader = new THREE.TextureLoader();
-  const earthTex = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/land_ocean_ice_cloud_2048.jpg');
-  const globeGeo = new THREE.SphereGeometry(1,64,64);
-  const globeMat = new THREE.MeshPhongMaterial({ map: earthTex });
-  globe = new THREE.Mesh(globeGeo, globeMat);
-  scene.add(globe);
-
-  // خلفية المجرة
-  const starGeo = new THREE.SphereGeometry(90,64,64);
-  const starMat = new THREE.MeshBasicMaterial({
-    map: loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/galaxy_starfield.png'),
-    side: THREE.BackSide
-  });
-  stars = new THREE.Mesh(starGeo, starMat);
-  scene.add(stars);
-
-  animate();
-}
-function animate(){
-  requestAnimationFrame(animate);
-  globe.rotation.y += 0.0008;
-  stars.rotation.y += 0.00015;
-  controls.update();
-  renderer.render(scene, camera);
-}
-initGlobe();
-
-// ======== خريطة 2D ========
-const mapDiv = L.map('map',{ center:[20,0], zoom:2, worldCopyJump:true, zoomControl:true });
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  maxZoom:6,
-  attribution:'&copy; OpenStreetMap'
-}).addTo(mapDiv);
-
-let layer;
-fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
-.then(r=>r.json()).then(data=>{
-  layer = L.geoJSON(data,{
-    style:{ color:"#00ffff", weight:1, fillOpacity:0.1 },
-    onEachFeature:(feature, l)=>{
-      l.on('click', ()=>{
-        if(selectedCountry) layer.resetStyle(selectedCountry);
-        selectedCountry = l;
-        l.setStyle({ color:"#ff3b3b", weight:2 });
-        const name = feature.properties.ADMIN;
-        getCountryInfo(name);
-      });
-    }
-  }).addTo(mapDiv);
-});
-
-// ======== جلب بيانات الدولة ========
-function getCountryInfo(name){
-  fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(name)}?fullText=false`)
-  .then(r=>r.json()).then(data=>{
-    const c = data[0];
-    infoName.textContent = c.name.common || name;
-    infoFlag.src = c.flags.png || c.flags.svg || "";
-    infoCapital.textContent = c.capital ? c.capital[0] : "—";
-    infoPopulation.textContent = c.population ? c.population.toLocaleString()+" نسمة" : "—";
-    infoArea.textContent = c.area ? c.area.toLocaleString()+" كم²" : "—";
-    infoCurrency.textContent = c.currencies ? Object.keys(c.currencies).map(k=>k+" ("+c.currencies[k].name+")").join(", ") : "—";
-  }).catch(()=>{
-    infoName.textContent = name;
-    infoFlag.src = "";
-    infoCapital.textContent = infoPopulation.textContent = infoArea.textContent = infoCurrency.textContent = "—";
-  });
+async function loadCountries(){
+  const res=await fetch("https://restcountries.com/v3.1/all");
+  const data=await res.json();
+  countries=data.filter(c=>c.flags && c.name && c.name.common);
+  nextRound();
 }
 
-// ======== التبديل بين 3D و 2D ========
-document.getElementById('switch-btn').addEventListener('click',()=>{
-  const globeDiv = document.getElementById('globe');
-  const mapDivEl = document.getElementById('map');
-  const btn = document.getElementById('switch-btn');
-  if(globeDiv.style.display !== "none"){
-    globeDiv.style.display = "none";
-    mapDivEl.style.display = "block";
-    btn.textContent = "🌌 عرض الكرة الأرضية 3D";
-    setTimeout(()=>mapDiv.invalidateSize(),200);
-  } else {
-    globeDiv.style.display = "block";
-    mapDivEl.style.display = "none";
-    btn.textContent = "🗺️ عرض الخريطة 2D";
+function nextRound(){
+  if(used.length===countries.length){
+    alert("🎉 خلصت كل الأعلام! نتيجتك: "+score);
+    used=[];
+    score=0;
+    scoreEl.textContent="النتيجة: 0";
   }
-});
+  let rand;
+  do { rand=Math.floor(Math.random()*countries.length); }
+  while(used.includes(rand));
+  used.push(rand);
+  const correct=countries[rand];
+  flagEl.src=correct.flags.png;
+  flagEl.style.display='block';
+  flagEl.classList.add("fade");
 
-window.addEventListener('resize',()=>{
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  mapDiv.invalidateSize();
-});
+  // عرض العلم ثانية واحدة فقط
+  setTimeout(()=>{
+    flagEl.style.display='none';
+    showOptions(correct);
+  },1000);
+}
+
+function showOptions(correct){
+  optionsEl.innerHTML='';
+  const correctName=correct.name.common;
+  const opts=[correctName];
+  while(opts.length<3){
+    const rand=countries[Math.floor(Math.random()*countries.length)].name.common;
+    if(!opts.includes(rand)) opts.push(rand);
+  }
+  opts.sort(()=>Math.random()-0.5);
+  opts.forEach(name=>{
+    const btn=document.createElement('button');
+    btn.textContent=name;
+    btn.className='option fade';
+    btn.onclick=()=>{
+      if(name===correctName){
+        btn.style.background= 'var(--correct)';
+        score++;
+        scoreEl.textContent="النتيجة: "+score;
+      } else {
+        btn.style.background='var(--wrong)';
+      }
+      disableAll();
+      setTimeout(nextRound,1000);
+    };
+    optionsEl.appendChild(btn);
+  });
+}
+function disableAll(){
+  document.querySelectorAll('.option').forEach(b=>b.disabled=true);
+}
+loadCountries();
 </script>
 </body>
 </html>
