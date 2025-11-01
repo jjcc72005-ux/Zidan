@@ -39,6 +39,7 @@
       padding:12px 18px;
       background:rgba(0,0,0,0.25);
       border-bottom:1px solid rgba(255,255,255,0.03);
+      flex-shrink: 0;
     }
     header h1{margin:0;font-size:18px}
     header p{margin:4px 0 0;color:var(--muted);font-size:13px}
@@ -48,6 +49,8 @@
       gap:10px;
       height:calc(100vh - 74px);
       padding:10px;
+      flex: 1;
+      min-height: 0;
     }
 
     /* Sidebar */
@@ -58,6 +61,7 @@
       padding:12px;
       box-shadow:0 6px 20px rgba(0,0,0,0.5);
       overflow:auto;
+      flex-shrink: 0;
     }
     .controls{display:flex;gap:8px;margin-bottom:8px}
     #search{
@@ -71,11 +75,22 @@
     #country-list li{
       padding:8px;border-radius:8px;margin-bottom:6px;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
       display:flex;align-items:center;gap:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.02);
+      transition: all 0.2s ease;
+    }
+    #country-list li:hover {
+      background: rgba(43, 212, 200, 0.1);
+      border-color: rgba(43, 212, 200, 0.3);
     }
     .country-flag-thumb{width:36px;height:24px;border-radius:4px;object-fit:cover;border:1px solid rgba(0,0,0,0.4)}
 
     /* Globe */
-    #globe-container{flex:1;border-radius:12px;overflow:hidden;position:relative}
+    #globe-container{
+      flex:1;
+      border-radius:12px;
+      overflow:hidden;
+      position:relative;
+      min-width: 0;
+    }
     #globe{height:100%;width:100%}
     #globe-info {
       position: absolute;
@@ -86,6 +101,7 @@
       border-radius: 8px;
       font-size: 12px;
       color: var(--muted);
+      z-index: 10;
     }
 
     /* Modal */
@@ -97,6 +113,8 @@
     .modal-card{
       width:380px;background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
       box-shadow:0 12px 40px rgba(0,0,0,0.6);position:relative;text-align:right;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     #close-modal{position:absolute;left:12px;top:12px;background:#ff5f5f;border:0;color:white;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer}
     #modal-flag{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:10px}
@@ -105,9 +123,104 @@
     #modal-more{display:inline-block;margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--accent);color:#012; text-decoration:none;font-weight:600}
 
     /* Responsive */
-    @media (max-width:900px){
-      #sidebar{display:none}
-      .modal-card{width:92%}
+    @media (max-width: 1200px) {
+      #sidebar {
+        width: 280px;
+      }
+    }
+    
+    @media (max-width: 900px){
+      main {
+        flex-direction: column;
+        height: auto;
+      }
+      
+      #sidebar {
+        width: 100%;
+        max-height: 40vh;
+      }
+      
+      #globe-container {
+        min-height: 50vh;
+      }
+    }
+    
+    @media (max-width: 600px){
+      header h1 {
+        font-size: 16px;
+      }
+      
+      header p {
+        font-size: 12px;
+      }
+      
+      .modal-card {
+        width: 95%;
+        padding: 12px;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+    }
+    
+    @media (max-width: 400px){
+      main {
+        padding: 5px;
+        gap: 5px;
+      }
+      
+      #sidebar {
+        padding: 8px;
+      }
+    }
+
+    /* تنسيق أسماء الدول على الكرة الأرضية */
+    .country-label {
+      position: absolute;
+      color: white;
+      font-family: 'Cairo', sans-serif;
+      font-size: 12px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity 0.3s;
+      z-index: 5;
+    }
+    
+    .country-label.highlight {
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 14px;
+      text-shadow: 0 0 8px rgba(43, 212, 200, 0.8);
+    }
+    
+    /* زر القائمة المتنقلة للشاشات الصغيرة */
+    #mobile-menu-toggle {
+      display: none;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--accent);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: #012;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    
+    @media (max-width: 900px) {
+      #mobile-menu-toggle {
+        display: block;
+      }
+      
+      #sidebar.hidden-mobile {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -118,6 +231,8 @@
   </header>
 
   <main>
+    <button id="mobile-menu-toggle">☰</button>
+    
     <aside id="sidebar">
       <div class="controls">
         <input id="search" type="search" placeholder="ابحث عن دولة بالاسم..." />
@@ -167,6 +282,7 @@
     let scene, camera, renderer, globe, controls;
     let countriesData = [];
     let countryObjects = [];
+    let countryLabels = [];
 
     function initGlobe() {
       // إنشاء المشهد
@@ -243,6 +359,7 @@
         .then(geo => {
           countriesData = geo.features;
           drawCountryBorders(geo);
+          createCountryLabels(geo);
           populateCountryList(geo.features);
         })
         .catch(err => {
@@ -293,6 +410,78 @@
       });
     }
 
+    // إنشاء أسماء الدول على الكرة الأرضية
+    function createCountryLabels(geoData) {
+      // مسح أي تسميات سابقة
+      countryLabels.forEach(label => {
+        if (label.element && label.element.parentNode) {
+          label.element.parentNode.removeChild(label.element);
+        }
+      });
+      countryLabels = [];
+      
+      geoData.features.forEach(feature => {
+        const countryName = feature.properties.name || feature.properties.NAME || feature.properties.ADMIN || '';
+        if (!countryName) return;
+        
+        // حساب المركز التقريبي للدولة
+        const center = getFeatureCenter(feature);
+        if (!center) return;
+        
+        // إنشاء عنصر نصي
+        const label = document.createElement('div');
+        label.className = 'country-label';
+        label.textContent = countryName;
+        label.style.display = 'none'; // مخفي افتراضيًا
+        
+        // إضافة إلى DOM
+        document.getElementById('globe-container').appendChild(label);
+        
+        // حفظ المرجع
+        countryLabels.push({
+          element: label,
+          country: feature.properties,
+          center: center
+        });
+      });
+      
+      // تحديث مواقع التسميات
+      updateLabelPositions();
+    }
+
+    // تحديث مواقع أسماء الدول بناءً على موضع الكاميرا
+    function updateLabelPositions() {
+      countryLabels.forEach(labelInfo => {
+        const label = labelInfo.element;
+        const center = labelInfo.center;
+        
+        // تحويل الإحداثيات الجغرافية إلى إحداثيات ثلاثية الأبعاد
+        const position = latLonToVector3(center[0], center[1], 102);
+        
+        // تحويل الإحداثيات ثلاثية الأبعاد إلى إحداثيات الشاشة
+        const vector = position.clone();
+        vector.project(camera);
+        
+        const widthHalf = document.getElementById('globe').offsetWidth / 2;
+        const heightHalf = document.getElementById('globe').offsetHeight / 2;
+        
+        const x = (vector.x * widthHalf) + widthHalf;
+        const y = -(vector.y * heightHalf) + heightHalf;
+        
+        // التحقق مما إذا كانت التسمية في الجانب الأمامي من الكرة الأرضية
+        const isVisible = vector.z > 0 && vector.z <= 1;
+        
+        if (isVisible && x >= 0 && x <= document.getElementById('globe').offsetWidth && 
+            y >= 0 && y <= document.getElementById('globe').offsetHeight) {
+          label.style.display = 'block';
+          label.style.left = x + 'px';
+          label.style.top = y + 'px';
+        } else {
+          label.style.display = 'none';
+        }
+      });
+    }
+
     function latLonToVector3(lat, lon, radius) {
       const phi = (90 - lat) * (Math.PI / 180);
       const theta = (lon + 180) * (Math.PI / 180);
@@ -308,12 +497,15 @@
       requestAnimationFrame(animate);
       controls.update();
       renderer.render(scene, camera);
+      updateLabelPositions();
     }
 
     // === عناصر DOM ===
     const countryListEl = document.getElementById('country-list');
     const searchInput = document.getElementById('search');
     const regionFilter = document.getElementById('region-filter');
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const sidebar = document.getElementById('sidebar');
 
     const modal = document.getElementById('country-modal');
     const closeModalBtn = document.getElementById('close-modal');
@@ -571,7 +763,26 @@
         // توجيه الكاميرا نحو الدولة
         controls.target.set(targetPosition.x, targetPosition.y, targetPosition.z);
         camera.position.set(targetPosition.x * 1.5, targetPosition.y * 1.5, targetPosition.z * 1.5);
+        
+        // إبراز اسم الدولة
+        highlightCountryLabel(feature.properties.name || feature.properties.NAME || feature.properties.ADMIN);
       }
+    }
+    
+    // إبراز اسم دولة محددة
+    function highlightCountryLabel(countryName) {
+      countryLabels.forEach(labelInfo => {
+        if (labelInfo.country.name === countryName || 
+            labelInfo.country.NAME === countryName || 
+            labelInfo.country.ADMIN === countryName) {
+          labelInfo.element.classList.add('highlight');
+          
+          // إزالة التمييز بعد 3 ثواني
+          setTimeout(() => {
+            labelInfo.element.classList.remove('highlight');
+          }, 3000);
+        }
+      });
     }
 
     // حساب مركز تقريبي من البوليغون (إذا متاح)
@@ -640,6 +851,7 @@
             
             if (feature) {
               onCountryClick(feature);
+              highlightCountryLabel(country.name);
             }
           }
         }
@@ -661,6 +873,11 @@
       camera.updateProjectionMatrix();
       renderer.setSize(document.getElementById('globe').offsetWidth, document.getElementById('globe').offsetHeight);
     }
+    
+    // تبديل القائمة الجانبية على الشاشات الصغيرة
+    mobileMenuToggle.addEventListener('click', function() {
+      sidebar.classList.toggle('hidden-mobile');
+    });
   </script>
 </body>
 </html>
