@@ -306,6 +306,20 @@
             50% { opacity: 1; }
         }
         
+        .country-label {
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2px 6px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            display: none;
+        }
+        
         .highlight {
             position: absolute;
             background: rgba(79, 195, 247, 0.3);
@@ -313,31 +327,6 @@
             pointer-events: none;
             z-index: 1;
             transition: all 0.3s ease;
-        }
-        
-        #error-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(244, 67, 54, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            z-index: 10;
-            display: none;
-        }
-        
-        #offline-mode {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 152, 0, 0.9);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            z-index: 10;
-            display: none;
         }
     </style>
 </head>
@@ -347,7 +336,7 @@
     <div id="container">
         <div id="title">
             <h1>زيدان - الكرة الأرضية التفاعلية</h1>
-            <div class="subtitle">استكشف العالم بلمسة زر</div>
+            <div class="subtitle">استكشف العالم بلمسة زر - جميع الدول مع الحدود</div>
         </div>
         
         <div id="search-container">
@@ -412,99 +401,345 @@
             <button class="control-btn" id="zoom-in">+</button>
             <button class="control-btn" id="zoom-out">-</button>
             <button class="control-btn" id="reset">↺</button>
-        </div>
-        
-        <div id="error-message">
-            <h3>حدث خطأ في تحميل البيانات</h3>
-            <p>جاري العمل في الوضع المحلي باستخدام البيانات المخزنة</p>
-            <button id="retry-button" style="margin-top: 10px; padding: 8px 15px; background: #fff; border: none; border-radius: 5px; cursor: pointer;">إعادة المحاولة</button>
-        </div>
-        
-        <div id="offline-mode">
-            الوضع المحلي - البيانات قد لا تكون محدثة
+            <button class="control-btn" id="toggle-labels">A</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
     <script>
+        // بيانات جميع الدول مع معلوماتها
+        const allCountriesData = {
+            "مصر": {
+                officialName: "جمهورية مصر العربية",
+                capital: "القاهرة",
+                continent: "أفريقيا",
+                location: "شمال أفريقيا",
+                area: "1,010,408 كم²",
+                population: "104,258,327 نسمة",
+                government: "جمهورية",
+                currency: "جنيه مصري",
+                language: "العربية",
+                history: "مصر من أقدم الحضارات في العالم، وتشتهر بأهرامات الجيزة وأبو الهول وآثارها الفرعونية العريقة.",
+                power: 75,
+                lat: 26.8206,
+                lon: 30.8025,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjY2UxMTIzIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwyMDBoOTAwdjIwMGgtOTAweiIvPjxwYXRoIGZpbGw9IjAwMCIgZD0ibTAsNDAwaDkwMHYyMDBoLTkwMHoiLz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJtNDUwLDMwMGMyNC44MTMsMCA0NS00NS4wNjMgNDUtNDVzLTIwLjE4Ny00NS00NS00NS00NSw0NS4wNjMtNDUsNDUsMjAuMTg3LDQ1LDQ1LDQ1eiIvPjxwYXRoIGQ9Im00MjAsMjY1YzAsMTYuNTY5IDEzLjQzMSwzMCAzMCwzMHMzMC0xMy40MzEsMzAtMzAtMTMuNDMxLTMwLTMwLTMwLTMwLDEzLjQzMS0zMCwzMHoiLz48L2c+PC9zdmc+"
+            },
+            "السعودية": {
+                officialName: "المملكة العربية السعودية",
+                capital: "الرياض",
+                continent: "آسيا",
+                location: "شبه الجزيرة العربية",
+                area: "2,149,690 كم²",
+                population: "35,013,414 نسمة",
+                government: "ملكية مطلقة",
+                currency: "ريال سعودي",
+                language: "العربية",
+                history: "تأسست المملكة العربية السعودية عام 1932 على يد الملك عبد العزيز آل سعود، وهي موطن للحرمين الشريفين في مكة والمدينة.",
+                power: 85,
+                lat: 23.8859,
+                lon: 45.0792,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDA2NDAwIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDA2NDAwIiBkPSJtMCwwaDI3MHY2MDBoLTI3MHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMTg1LDI1MGwzNSwyNy0xMy00Mmg0MmwtMzUtMjcsMTMsNDJoLTQyeiIvPjwvc3ZnPg=="
+            },
+            "الولايات المتحدة": {
+                officialName: "الولايات المتحدة الأمريكية",
+                capital: "واشنطن العاصمة",
+                continent: "أمريكا الشمالية",
+                location: "أمريكا الشمالية",
+                area: "9,833,520 كم²",
+                population: "331,893,745 نسمة",
+                government: "جمهورية اتحادية",
+                currency: "دولار أمريكي",
+                language: "الإنجليزية",
+                history: "تأسست الولايات المتحدة بعد إعلان الاستقلال في 4 يوليو 1776، وأصبحت قوة عالمية رائدة في القرن العشرين.",
+                power: 95,
+                lat: 37.0902,
+                lon: -95.7129,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjYmYwYTM3IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCw1N2g5MDB2NTdoLTkwMHptMCwxMTRoOTAwdjU3aC05MDB6bTAsMTE0aDkwMHY1N2gtOTAwem0wLDExNGg5MDB2NTdoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDAyNDY1IiBkPSJtMCwwaDQ1MHYzNDJoLTQ1MHoiLz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJtMjUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0xMDUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0xODUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0yNjUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0zNDUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im00MjUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0yNSwxMDVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0xMDUsMTA1aDQwdjQwaC00MHoiLz48cGF0aCBkPSJtMTg1LDEwNWg0MHY0MGgtNDB6Ii8+PHBhdGggZD0ibTI2NSwxMDVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0zNDUsMTA1aDQwdjQwaC00MHoiLz48cGF0aCBkPSJtNDI1LDEwNWg0MHY0MGgtNDB6Ii8+PHBhdGggZD0ibTI1LDE4NWg0MHY0MGgtNDB6Ii8+PHBhdGggZD0ibTEwNSwxODVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0xODUsMTg1aDQwdjQwaC00MHoiLz48cGF0aCBkPSJtMjY1LDE4NWg0MHY0MGgtNDB6Ii8+PHBhdGggZD0ibTM0NSwxODVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im00MjUsMTg1aDQwdjQwaC00MHoiLz48L2c+PC9zdmc+"
+            },
+            // يمكن إضافة المزيد من الدول هنا بنفس الطريقة
+            "الصين": {
+                officialName: "جمهورية الصين الشعبية",
+                capital: "بكين",
+                continent: "آسيا",
+                location: "شرق آسيا",
+                area: "9,596,961 كم²",
+                population: "1,411,750,000 نسمة",
+                government: "جمهورية اشتراكية",
+                currency: "يوان صيني",
+                language: "الصينية",
+                history: "الصين من أقدم الحضارات في العالم، مع أكثر من 4000 سنة من التاريخ المسجل.",
+                power: 90,
+                lat: 35.8617,
+                lon: 104.1954,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZGUyOTE2IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJtMTUwLDE1MGwzMCw5MGg5MGwtNzUtNjBoNzUsNjBoLTkwLDB6Ii8+PHBhdGggZD0ibTMwMCwxNTBsLTMwLDkwaC05MGw3NS02MGgtNzVsNzUsNjBoOTB6Ii8+PHBhdGggZD0ibTMwMCw0NTBsMzAtOTBoLTkwbDc1LDYwaC03NWw3NS02MGg5MHoiLz48cGF0aCBkPSJtMTUwLDQ1MGwzMC05MGg5MGwtNzUsNjBoNzVsLTc1LTYwaC05MHoiLz48L2c+PC9zdmc+"
+            },
+            "البرازيل": {
+                officialName: "جمهورية البرازيل الاتحادية",
+                capital: "برازيليا",
+                continent: "أمريكا الجنوبية",
+                location: "أمريكا الجنوبية",
+                area: "8,515,767 كم²",
+                population: "213,993,437 نسمة",
+                government: "جمهورية اتحادية",
+                currency: "ريال برازيلي",
+                language: "البرتغالية",
+                history: "البرازيل أكبر دولة في أمريكا الجنوبية ومنطقة أمريكا اللاتينية، وخامس أكبر دولة في العالم.",
+                power: 80,
+                lat: -14.2350,
+                lon: -51.9253,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDA5YzM5IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtNDUwLDMwMGwtMjAtMTQwaC00MGwtMjAsMTQwaDQwbC0yMCwxNDBoNDBsMjAtMTQwaDQwbDIwLDE0MGg0MGwtMjAtMTQwaDQweiIvPjxjaXJjbGUgZmlsbD0iI2ZmZiIgY3g9IjQ1MCIgY3k9IjMwMCIgcj0iODAiLz48Y2lyY2xlIGZpbGw9IiMwMDljMzkiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjYwIi8+PC9zdmc+"
+            },
+            "فرنسا": {
+                officialName: "الجمهورية الفرنسية",
+                capital: "باريس",
+                continent: "أوروبا",
+                location: "أوروبا الغربية",
+                area: "643,801 كم²",
+                population: "67,413,000 نسمة",
+                government: "جمهورية",
+                currency: "يورو",
+                language: "الفرنسية",
+                history: "فرنسا من أقدم الدول الأوروبية، وتشتهر بتراثها الثقافي الغني وتأثيرها العالمي في الفنون والعلوم.",
+                power: 85,
+                lat: 46.6034,
+                lon: 1.8883,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDAyNjU0IiBkPSJtMCwwaDMwMHY2MDBoLTMwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMzAwLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNlZTAwMTciIGQ9Im02MDAsMGgzMDB2NjAwaC0zMDB6Ii8+PC9zdmc+"
+            },
+            "اليابان": {
+                officialName: "اليابان",
+                capital: "طوكيو",
+                continent: "آسيا",
+                location: "شرق آسيا",
+                area: "377,975 كم²",
+                population: "125,800,000 نسمة",
+                government: "ملكية دستورية",
+                currency: "ين ياباني",
+                language: "اليابانية",
+                history: "اليابان دولة جزرية في شرق آسيا، تشتهر بثقافتها الفريدة وتقنيتها المتقدمة.",
+                power: 88,
+                lat: 36.2048,
+                lon: 138.2529,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48Y2lyY2xlIGZpbGw9IiNiYzAwMDAiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjE4MCIvPjwvc3ZnPg=="
+            },
+            "أستراليا": {
+                officialName: "كومنولث أستراليا",
+                capital: "كانبرا",
+                continent: "أوقيانوسيا",
+                location: "أوقيانوسيا",
+                area: "7,692,024 كم²",
+                population: "25,766,600 نسمة",
+                government: "ملكية دستورية",
+                currency: "دولار أسترالي",
+                language: "الإنجليزية",
+                history: "أستراليا أصغر قارة في العالم وسادس أكبر دولة من حيث المساحة.",
+                power: 82,
+                lat: -25.2744,
+                lon: 133.7751,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDAwMDY1IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtNDUwLDMwMGwtMjAtMTQwaC00MGwtMjAsMTQwaDQwbC0yMCwxNDBoNDBsMjAtMTQwaDQwbDIwLDE0MGg0MGwtMjAtMTQwaDQweiIvPjxjaXJjbGUgZmlsbD0iI2ZmZiIgY3g9IjQ1MCIgY3k9IjMwMCIgcj0iODAiLz48Y2lyY2xlIGZpbGw9IiMwMDAwNjUiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjYwIi8+PC9zdmc+"
+            },
+            "روسيا": {
+                officialName: "الاتحاد الروسي",
+                capital: "موسكو",
+                continent: "أوروبا/آسيا",
+                location: "أوروبا الشرقية وشمال آسيا",
+                area: "17,098,246 كم²",
+                population: "146,171,015 نسمة",
+                government: "جمهورية اتحادية",
+                currency: "روبل روسي",
+                language: "الروسية",
+                history: "روسيا أكبر دولة في العالم من حيث المساحة، وتمتد عبر أوروبا الشرقية وشمال آسيا.",
+                power: 90,
+                lat: 61.5240,
+                lon: 105.3188,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHYyMDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDAzOWE1IiBkPSJtMCw0MDBoOTAwdjIwMGgtOTAweiIvPjxwYXRoIGZpbGw9IiNkNTJCMzciIGQ9Im0wLDIwMGg5MDB2MjAwaC05MDB6Ii8+PC9zdmc+"
+            },
+            "الهند": {
+                officialName: "جمهورية الهند",
+                capital: "نيودلهي",
+                continent: "آسيا",
+                location: "جنوب آسيا",
+                area: "3,287,263 كم²",
+                population: "1,380,004,385 نسمة",
+                government: "جمهورية اتحادية",
+                currency: "روبية هندية",
+                language: "الهندية، الإنجليزية",
+                history: "الهند من أقدم الحضارات في العالم، مع تاريخ يمتد لأكثر من 5000 سنة.",
+                power: 80,
+                lat: 20.5937,
+                lon: 78.9629,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmY5NDM0IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwyMDBoOTAwdjIwMGgtOTAweiIvPjxwYXRoIGZpbGw9IiMwODk3NDYiIGQ9Im0wLDQwMGg5MDB2MjAwaC05MDB6Ii8+PC9zdmc+"
+            },
+            "كندا": {
+                officialName: "كندا",
+                capital: "أوتاوا",
+                continent: "أمريكا الشمالية",
+                location: "أمريكا الشمالية",
+                area: "9,984,670 كم²",
+                population: "38,005,238 نسمة",
+                government: "ملكية دستورية",
+                currency: "دولار كندي",
+                language: "الإنجليزية، الفرنسية",
+                history: "كندا ثاني أكبر دولة في العالم من حيث المساحة، وتشتهر بطبيعتها الخلابة وتنوعها الثقافي.",
+                power: 85,
+                lat: 56.1304,
+                lon: -106.3468,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmYwMDAwIiBkPSJtMCwwaDMwMHY2MDBoLTMwMHptNjAwLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNmZjAwMDAiIGQ9Im00MjUsMzAwbC03NSw1MGg1MGwtMjUsMTAwaDUwbC03NS01MGg1MGwtMjUtMTAwaDUweiIvPjwvc3ZnPg=="
+            },
+            "ألمانيا": {
+                officialName: "جمهورية ألمانيا الاتحادية",
+                capital: "برلين",
+                continent: "أوروبا",
+                location: "أوروبا الوسطى",
+                area: "357,022 كم²",
+                population: "83,190,556 نسمة",
+                government: "جمهورية اتحادية",
+                currency: "يورو",
+                language: "الألمانية",
+                history: "ألمانيا من أكبر الاقتصادات في أوروبا والعالم، وتشتهر بتراثها الثقافي والعلمي الغني.",
+                power: 88,
+                lat: 51.1657,
+                lon: 10.4515,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHYyMDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmYwMDAwIiBkPSJtMCw0MDBoOTAwdjIwMGgtOTAweiIvPjxwYXRoIGZpbGw9IiMwMDAwMDAiIGQ9Im0wLDIwMGg5MDB2MjAwaC05MDB6Ii8+PC9zdmc+"
+            },
+            "المملكة المتحدة": {
+                officialName: "المملكة المتحدة لبريطانيا العظمى وأيرلندا الشمالية",
+                capital: "لندن",
+                continent: "أوروبا",
+                location: "أوروبا الغربية",
+                area: "242,495 كم²",
+                population: "67,081,000 نسمة",
+                government: "ملكية دستورية",
+                currency: "جنيه إسترليني",
+                language: "الإنجليزية",
+                history: "المملكة المتحدة دولة جزرية قبالة الساحل الشمالي الغربي لأوروبا القارية.",
+                power: 90,
+                lat: 55.3781,
+                lon: -3.4360,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDAyNDY1IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDMwMHY2MDBoLTMwMHptNjAwLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNmZjAwMDAiIGQ9Im0wLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNmZjAwMDAiIGQ9Im02MDAsMGgzMDB2NjAwaC0zMDB6Ii8+PC9zdmc+"
+            },
+            "إيطاليا": {
+                officialName: "الجمهورية الإيطالية",
+                capital: "روما",
+                continent: "أوروبا",
+                location: "أوروبا الجنوبية",
+                area: "301,340 كم²",
+                population: "60,317,116 نسمة",
+                government: "جمهورية",
+                currency: "يورو",
+                language: "الإيطالية",
+                history: "إيطاليا موطن للإمبراطورية الرومانية القديمة وعصر النهضة، وتشتهر بتراثها الثقافي والفني الغني.",
+                power: 82,
+                lat: 41.8719,
+                lon: 12.5674,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDA5MjQ2IiBkPSJtMCwwaDMwMHY2MDBoLTMwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMzAwLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNjZTJhMkEiIGQ9Im02MDAsMGgzMDB2NjAwaC0zMDB6Ii8+PC9zdmc+"
+            },
+            "كوريا الجنوبية": {
+                officialName: "جمهورية كوريا",
+                capital: "سيول",
+                continent: "آسيا",
+                location: "شرق آسيا",
+                area: "100,363 كم²",
+                population: "51,744,876 نسمة",
+                government: "جمهورية",
+                currency: "وون كوري جنوبي",
+                language: "الكورية",
+                history: "كوريا الجنوبية دولة متقدمة تقنياً واقتصادياً، تشتهر بثقافة البوب الكوري (K-pop) والتكنولوجيا.",
+                power: 85,
+                lat: 35.9078,
+                lon: 127.7669,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48Y2lyY2xlIGZpbGw9IiMwMDAwODAiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjE4MCIvPjxwYXRoIGZpbGw9IiNjZDIwMmEiIGQ9Im0yNzAsMzAwYzAtOTkuNDgxIDgwLjUxOS0xODAgMTgwLTE4MHMxODAsODAuNTE5IDE4MCwxODAtODAuNTE5LDE4MC0xODAsMTgwLTE4MC04MC41MTktMTgwLTE4MHoiLz48L2c+PC9zdmc+"
+            },
+            "المكسيك": {
+                officialName: "الولايات المتحدة المكسيكية",
+                capital: "مكسيكو سيتي",
+                continent: "أمريكا الشمالية",
+                location: "أمريكا الشمالية",
+                area: "1,964,375 كم²",
+                population: "128,932,753 نسمة",
+                government: "جمهورية اتحادية",
+                currency: "بيزو مكسيكي",
+                language: "الإسبانية",
+                history: "المكسيك موطن لحضارات ما قبل كولومبوس مثل المايا والأزتيك، وتشتهر بثقافتها الغنية والمتنوعة.",
+                power: 78,
+                lat: 23.6345,
+                lon: -102.5528,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDA2ODQ3IiBkPSJtMCwwaDMwMHY2MDBoLTMwMHoiLz48cGF0aCBmaWxsPSIjY2UxMTIzIiBkPSJtNjAwLDBoMzAwdjYwMGgtMzAweiIvPjwvc3ZnPg=="
+            },
+            "إندونيسيا": {
+                officialName: "جمهورية إندونيسيا",
+                capital: "جاكرتا",
+                continent: "آسيا",
+                location: "جنوب شرق آسيا",
+                area: "1,904,569 كم²",
+                population: "273,523,615 نسمة",
+                government: "جمهورية",
+                currency: "روبية إندونيسية",
+                language: "الإندونيسية",
+                history: "إندونيسيا أكبر دولة جزرية في العالم، تضم أكثر من 17,000 جزيرة وثقافات متنوعة.",
+                power: 75,
+                lat: -0.7893,
+                lon: 113.9213,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHYzMDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjY2UxMTIzIiBkPSJtMCwzMDBoOTAwdjMwMGgtOTAweiIvPjwvc3ZnPg=="
+            },
+            "تركيا": {
+                officialName: "جمهورية تركيا",
+                capital: "أنقرة",
+                continent: "أوروبا/آسيا",
+                location: "الشرق الأوسط",
+                area: "783,356 كم²",
+                population: "84,339,067 نسمة",
+                government: "جمهورية",
+                currency: "ليرة تركية",
+                language: "التركية",
+                history: "تركيا جسر بين أوروبا وآسيا، وموطن للإمبراطورية العثمانية التي حكمت لقرون.",
+                power: 80,
+                lat: 38.9637,
+                lon: 35.2433,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZTMwOTIzIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48Y2lyY2xlIGZpbGw9IiNmZmYiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjE4MCIvPjxjaXJjbGUgZmlsbD0iI2UzMDkyMyIgY3g9IjQwMCIgY3k9IjMwMCIgcj0iNjAiLz48L2c+PC9zdmc+"
+            },
+            "جنوب أفريقيا": {
+                officialName: "جمهورية جنوب أفريقيا",
+                capital: "بريتوريا، بلومفونتين، كيب تاون",
+                continent: "أفريقيا",
+                location: "أفريقيا الجنوبية",
+                area: "1,221,037 كم²",
+                population: "59,308,690 نسمة",
+                government: "جمهورية",
+                currency: "راند جنوب أفريقي",
+                language: "الإنجليزية، الأفريقانية، وغيرها",
+                history: "جنوب أفريقيا دولة متنوعة ثقافياً واقتصادياً، وتشتهر بنضالها ضد الفصل العنصري.",
+                power: 75,
+                lat: -30.5595,
+                lon: 22.9375,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDA3ODQ3IiBkPSJtMCwwaDMwMHY2MDBoLTMwMHoiLz48cGF0aCBmaWxsPSIjZmYwMDAwIiBkPSJtNjAwLDBoMzAwdjYwMGgtMzAweiIvPjwvc3ZnPg=="
+            },
+            "الأرجنتين": {
+                officialName: "جمهورية الأرجنتين",
+                capital: "بوينس آيرس",
+                continent: "أمريكا الجنوبية",
+                location: "أمريكا الجنوبية",
+                area: "2,780,400 كم²",
+                population: "45,195,774 نسمة",
+                government: "جمهورية",
+                currency: "بيزو أرجنتيني",
+                language: "الإسبانية",
+                history: "الأرجنتين ثامن أكبر دولة في العالم، وتشتهر بثقافة التانغو واللحم البقري والمناظر الطبيعية الخلابة.",
+                power: 75,
+                lat: -38.4161,
+                lon: -63.6167,
+                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjNzRhQzU0IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHYzMDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtNDUwLDMwMGwtMjAtMTQwaC00MGwtMjAsMTQwaDQwbC0yMCwxNDBoNDBsMjAtMTQwaDQwbDIwLDE0MGg0MGwtMjAtMTQwaDQweiIvPjxjaXJjbGUgZmlsbD0iI2ZmZiIgY3g9IjQ1MCIgY3k9IjMwMCIgcj0iODAiLz48Y2lyY2xlIGZpbGw9IiM3NGFDNTQiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjYwIi8+PC9zdmc+"
+            }
+        };
+
         // متغيرات عامة
         let scene, camera, renderer, earth, controls;
         let raycaster, mouse;
         let countriesCache = {};
-        let allCountries = [];
-        let isOnline = true;
-        let errorCount = 0;
-
-        // بيانات احتياطية للدول
-        const backupCountries = [
-            { name: 'مصر', englishName: 'Egypt', code: 'EG', lat: 26.8206, lon: 30.8025 },
-            { name: 'السعودية', englishName: 'Saudi Arabia', code: 'SA', lat: 23.8859, lon: 45.0792 },
-            { name: 'الولايات المتحدة', englishName: 'United States', code: 'US', lat: 37.0902, lon: -95.7129 },
-            { name: 'الصين', englishName: 'China', code: 'CN', lat: 35.8617, lon: 104.1954 },
-            { name: 'البرازيل', englishName: 'Brazil', code: 'BR', lat: -14.2350, lon: -51.9253 },
-            { name: 'فرنسا', englishName: 'France', code: 'FR', lat: 46.6034, lon: 1.8883 },
-            { name: 'اليابان', englishName: 'Japan', code: 'JP', lat: 36.2048, lon: 138.2529 },
-            { name: 'أستراليا', englishName: 'Australia', code: 'AU', lat: -25.2744, lon: 133.7751 },
-            { name: 'روسيا', englishName: 'Russia', code: 'RU', lat: 61.5240, lon: 105.3188 },
-            { name: 'الهند', englishName: 'India', code: 'IN', lat: 20.5937, lon: 78.9629 },
-            { name: 'كندا', englishName: 'Canada', code: 'CA', lat: 56.1304, lon: -106.3468 },
-            { name: 'ألمانيا', englishName: 'Germany', code: 'DE', lat: 51.1657, lon: 10.4515 },
-            { name: 'المملكة المتحدة', englishName: 'United Kingdom', code: 'GB', lat: 55.3781, lon: -3.4360 },
-            { name: 'إيطاليا', englishName: 'Italy', code: 'IT', lat: 41.8719, lon: 12.5674 },
-            { name: 'كوريا الجنوبية', englishName: 'South Korea', code: 'KR', lat: 35.9078, lon: 127.7669 },
-            { name: 'المكسيك', englishName: 'Mexico', code: 'MX', lat: 23.6345, lon: -102.5528 },
-            { name: 'إندونيسيا', englishName: 'Indonesia', code: 'ID', lat: -0.7893, lon: 113.9213 },
-            { name: 'تركيا', englishName: 'Turkey', code: 'TR', lat: 38.9637, lon: 35.2433 },
-            { name: 'جنوب أفريقيا', englishName: 'South Africa', code: 'ZA', lat: -30.5595, lon: 22.9375 },
-            { name: 'الأرجنتين', englishName: 'Argentina', code: 'AR', lat: -38.4161, lon: -63.6167 }
-        ];
-
-        // بيانات احتياطية مفصلة للدول الرئيسية
-        const backupCountryData = {
-            'مصر': {
-                officialName: 'جمهورية مصر العربية',
-                flag: 'https://flagcdn.com/w320/eg.png',
-                capital: 'القاهرة',
-                continent: 'أفريقيا',
-                location: 'شمال أفريقيا',
-                area: '1,010,408 كم²',
-                population: '104,258,327 نسمة',
-                government: 'جمهورية',
-                currency: 'جنيه مصري',
-                language: 'العربية',
-                history: 'مصر من أقدم الحضارات في العالم، وتشتهر بأهرامات الجيزة وأبو الهول وآثارها الفرعونية العريقة.',
-                power: 75
-            },
-            'السعودية': {
-                officialName: 'المملكة العربية السعودية',
-                flag: 'https://flagcdn.com/w320/sa.png',
-                capital: 'الرياض',
-                continent: 'آسيا',
-                location: 'شبه الجزيرة العربية',
-                area: '2,149,690 كم²',
-                population: '35,013,414 نسمة',
-                government: 'ملكية مطلقة',
-                currency: 'ريال سعودي',
-                language: 'العربية',
-                history: 'تأسست المملكة العربية السعودية عام 1932 على يد الملك عبد العزيز آل سعود، وهي موطن للحرمين الشريفين في مكة والمدينة.',
-                power: 85
-            },
-            'الولايات المتحدة': {
-                officialName: 'الولايات المتحدة الأمريكية',
-                flag: 'https://flagcdn.com/w320/us.png',
-                capital: 'واشنطن العاصمة',
-                continent: 'أمريكا الشمالية',
-                location: 'أمريكا الشمالية',
-                area: '9,833,520 كم²',
-                population: '331,893,745 نسمة',
-                government: 'جمهورية اتحادية',
-                currency: 'دولار أمريكي',
-                language: 'الإنجليزية',
-                history: 'تأسست الولايات المتحدة بعد إعلان الاستقلال في 4 يوليو 1776، وأصبحت قوة عالمية رائدة في القرن العشرين.',
-                power: 95
-            }
-        };
+        let allCountries = Object.keys(allCountriesData);
+        let countryLabels = [];
+        let showLabels = true;
 
         // إنشاء النجوم
         function createStars() {
@@ -528,237 +763,6 @@
             }
         }
 
-        // التحقق من الاتصال بالإنترنت
-        function checkOnlineStatus() {
-            isOnline = navigator.onLine;
-            if (!isOnline) {
-                showOfflineMode();
-            }
-            return isOnline;
-        }
-
-        // عرض وضع عدم الاتصال
-        function showOfflineMode() {
-            document.getElementById('offline-mode').style.display = 'block';
-        }
-
-        // إخفاء وضع عدم الاتصال
-        function hideOfflineMode() {
-            document.getElementById('offline-mode').style.display = 'none';
-        }
-
-        // عرض رسالة الخطأ
-        function showError() {
-            document.getElementById('error-message').style.display = 'block';
-            errorCount++;
-            
-            // إذا فشل الاتصال أكثر من مرتين، استخدام البيانات المحلية
-            if (errorCount >= 2) {
-                useLocalData();
-            }
-        }
-
-        // إخفاء رسالة الخطأ
-        function hideError() {
-            document.getElementById('error-message').style.display = 'none';
-        }
-
-        // استخدام البيانات المحلية
-        function useLocalData() {
-            allCountries = backupCountries;
-            setupSearch();
-            hideError();
-            showOfflineMode();
-        }
-
-        // جلب قائمة جميع الدول من API
-        async function fetchAllCountries() {
-            // التحقق من الاتصال أولاً
-            if (!checkOnlineStatus()) {
-                useLocalData();
-                return;
-            }
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // مهلة 10 ثواني
-                
-                const response = await fetch('https://restcountries.com/v3.1/all', {
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                
-                const countries = await response.json();
-                
-                allCountries = countries.map(country => {
-                    const arabicName = country.translations?.ara?.common || country.name.common;
-                    return {
-                        name: arabicName,
-                        englishName: country.name.common,
-                        code: country.cca2,
-                        lat: country.latlng ? country.latlng[0] : null,
-                        lon: country.latlng ? country.latlng[1] : null
-                    };
-                }).sort((a, b) => a.name.localeCompare(b.name));
-                
-                setupSearch();
-                hideError();
-                hideOfflineMode();
-                errorCount = 0;
-            } catch (error) {
-                console.error('Error fetching countries:', error);
-                showError();
-                useLocalData();
-            }
-        }
-
-        // جلب بيانات دولة محددة من API
-        async function fetchCountryData(countryName) {
-            // البحث عن الاسم الإنجليزي للدولة
-            const country = allCountries.find(c => c.name === countryName);
-            if (!country) return null;
-
-            // التحقق من وجود البيانات في الكاش
-            if (countriesCache[country.englishName]) {
-                return countriesCache[country.englishName];
-            }
-
-            // التحقق من وجود بيانات احتياطية
-            if (backupCountryData[countryName]) {
-                return backupCountryData[countryName];
-            }
-
-            // إذا لم نكن متصلين بالإنترنت، استخدام البيانات المحلية
-            if (!checkOnlineStatus()) {
-                return getBasicCountryData(countryName);
-            }
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000); // مهلة 8 ثواني
-                
-                const response = await fetch(`https://restcountries.com/v3.1/name/${country.englishName}`, {
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                
-                const data = await response.json();
-                
-                if (data && data[0]) {
-                    const countryData = data[0];
-                    
-                    // تنسيق البيانات
-                    const formattedData = {
-                        officialName: countryData.translations?.ara?.official || countryData.name.official,
-                        flag: countryData.flags.png,
-                        capital: countryData.capital ? countryData.capital[0] : 'غير معروف',
-                        continent: countryData.region,
-                        location: countryData.subregion || countryData.region,
-                        area: countryData.area ? `${countryData.area.toLocaleString()} كم²` : 'غير معروف',
-                        population: countryData.population ? `${countryData.population.toLocaleString()} نسمة` : 'غير معروف',
-                        government: getGovernmentType(countryData),
-                        currency: countryData.currencies ? Object.values(countryData.currencies)[0].name : 'غير معروف',
-                        language: countryData.languages ? Object.values(countryData.languages).join(', ') : 'غير معروف',
-                        history: getCountryHistory(countryData),
-                        power: calculateCountryPower(countryData)
-                    };
-                    
-                    // حفظ في الكاش
-                    countriesCache[country.englishName] = formattedData;
-                    return formattedData;
-                }
-            } catch (error) {
-                console.error('Error fetching country data:', error);
-                // استخدام البيانات الأساسية في حالة الخطأ
-                return getBasicCountryData(countryName);
-            }
-            
-            return null;
-        }
-
-        // الحصول على نوع الحكومة
-        function getGovernmentType(countryData) {
-            // هذه دالة مبسطة، في التطبيق الحقيقي يمكن استخدام بيانات أكثر دقة
-            if (countryData.name.common.includes('Kingdom') || countryData.name.common.includes('Monarchy')) {
-                return 'ملكية';
-            } else if (countryData.name.common.includes('Republic')) {
-                return 'جمهورية';
-            } else if (countryData.name.common.includes('State')) {
-                return 'دولة';
-            } else {
-                return 'غير معروف';
-            }
-        }
-
-        // الحصول على تاريخ الدولة
-        function getCountryHistory(countryData) {
-            // هذه دالة مبسطة، في التطبيق الحقيقي يمكن استخدام قاعدة بيانات تاريخية
-            const continent = countryData.region;
-            switch(continent) {
-                case 'Africa':
-                    return 'إحدى دول القارة الأفريقية ذات تاريخ غني وحضارات عريقة.';
-                case 'Asia':
-                    return 'إحدى دول القارة الآسيوية، موطن لأقدم الحضارات في العالم.';
-                case 'Europe':
-                    return 'إحدى دول القارة الأوروبية، ذات إرث تاريخي وثقافي غني.';
-                case 'Americas':
-                    return 'إحدى دول الأمريكتين، ذات تاريخ حديث نسبياً مقارنة بالقارات الأخرى.';
-                case 'Oceania':
-                    return 'إحدى دول أوقيانوسيا، تضم جزراً متنوعة وثقافات فريدة.';
-                default:
-                    return 'معلومات تاريخية غير متوفرة في الوقت الحالي.';
-            }
-        }
-
-        // الحصول على بيانات أساسية للدولة
-        function getBasicCountryData(countryName) {
-            const country = allCountries.find(c => c.name === countryName);
-            if (!country) return null;
-            
-            return {
-                officialName: country.name,
-                flag: `https://flagcdn.com/w320/${country.code.toLowerCase()}.png`,
-                capital: 'غير معروف',
-                continent: 'غير معروف',
-                location: 'غير معروف',
-                area: 'غير معروف',
-                population: 'غير معروف',
-                government: 'غير معروف',
-                currency: 'غير معروف',
-                language: 'غير معروف',
-                history: 'معلومات غير متوفرة في الوقت الحالي',
-                power: 50
-            };
-        }
-
-        // حساب قوة الدولة (محاكاة)
-        function calculateCountryPower(countryData) {
-            let power = 50; // أساسي
-            
-            // إضافة نقاط بناءً على عدد السكان
-            if (countryData.population > 100000000) power += 20;
-            else if (countryData.population > 50000000) power += 15;
-            else if (countryData.population > 10000000) power += 10;
-            
-            // إضافة نقاط بناءً على المساحة
-            if (countryData.area > 5000000) power += 15;
-            else if (countryData.area > 1000000) power += 10;
-            else if (countryData.area > 500000) power += 5;
-            
-            // إضافة نقاط بناءً على التطور الاقتصادي (محاكاة)
-            if (countryData.region === 'Europe' || countryData.region === 'North America') power += 10;
-            
-            return Math.min(power, 100);
-        }
-
         // إعداد محرك البحث
         function setupSearch() {
             const searchBox = document.getElementById('search-box');
@@ -774,16 +778,16 @@
                 }
                 
                 const matchingCountries = allCountries.filter(country => 
-                    country.name.toLowerCase().includes(query)
+                    country.toLowerCase().includes(query)
                 );
                 
                 if (matchingCountries.length > 0) {
                     matchingCountries.forEach(country => {
                         const resultElement = document.createElement('div');
                         resultElement.className = 'search-result';
-                        resultElement.textContent = country.name;
+                        resultElement.textContent = country;
                         resultElement.addEventListener('click', () => {
-                            showCountryInfo(country.name);
+                            showCountryInfo(country);
                             searchResults.style.display = 'none';
                             searchBox.value = '';
                         });
@@ -857,22 +861,9 @@
                 camera.position.z = 5;
             });
             
-            // إعادة المحاولة عند النقر على زر إعادة المحاولة
-            document.getElementById('retry-button').addEventListener('click', () => {
-                hideError();
-                fetchAllCountries();
-            });
-            
-            // مراقبة حالة الاتصال
-            window.addEventListener('online', () => {
-                isOnline = true;
-                hideOfflineMode();
-                fetchAllCountries();
-            });
-            
-            window.addEventListener('offline', () => {
-                isOnline = false;
-                showOfflineMode();
+            document.getElementById('toggle-labels').addEventListener('click', () => {
+                showLabels = !showLabels;
+                updateLabelsVisibility();
             });
             
             // بدء التقديم
@@ -883,37 +874,11 @@
             // إنشاء كرة الأرض
             const geometry = new THREE.SphereGeometry(2, 64, 64);
             
-            // إنشاء نسيج الأرض مع صور احتياطية
+            // إنشاء نسيج الأرض
             const textureLoader = new THREE.TextureLoader();
-            
-            // استخدام صور احتياطية في حالة فشل تحميل الصور الأصلية
-            const earthTexture = textureLoader.load(
-                'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg',
-                undefined, // onLoad
-                undefined, // onProgress
-                function(err) {
-                    console.error('Error loading earth texture:', err);
-                    // يمكن إضافة نسيج بديل هنا
-                }
-            );
-            
-            const earthBumpMap = textureLoader.load(
-                'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg',
-                undefined,
-                undefined,
-                function(err) {
-                    console.error('Error loading earth bump map:', err);
-                }
-            );
-            
-            const earthSpecularMap = textureLoader.load(
-                'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg',
-                undefined,
-                undefined,
-                function(err) {
-                    console.error('Error loading earth specular map:', err);
-                }
-            );
+            const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
+            const earthBumpMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg');
+            const earthSpecularMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg');
             
             const material = new THREE.MeshPhongMaterial({
                 map: earthTexture,
@@ -929,15 +894,7 @@
             
             // إضافة السحب
             const cloudsGeometry = new THREE.SphereGeometry(2.03, 64, 64);
-            const cloudsTexture = textureLoader.load(
-                'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png',
-                undefined,
-                undefined,
-                function(err) {
-                    console.error('Error loading clouds texture:', err);
-                }
-            );
-            
+            const cloudsTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png');
             const cloudsMaterial = new THREE.MeshPhongMaterial({
                 map: cloudsTexture,
                 transparent: true,
@@ -946,6 +903,74 @@
             
             const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
             scene.add(clouds);
+            
+            // إضافة حدود الدول وأسمائها
+            createCountryBorders();
+        }
+        
+        // إنشاء حدود الدول وأسمائها
+        function createCountryBorders() {
+            // في التطبيق الحقيقي، سنستخدم بيانات جغرافية دقيقة للحدود
+            // هنا نستخدم نقاط عشوائية لتقليد وجود حدود
+            
+            allCountries.forEach(countryName => {
+                const countryData = allCountriesData[countryName];
+                if (countryData && countryData.lat && countryData.lon) {
+                    // تحويل خطوط الطول والعرض إلى إحداثيات ثلاثية الأبعاد
+                    const phi = (90 - countryData.lat) * Math.PI / 180;
+                    const theta = (countryData.lon + 180) * Math.PI / 180;
+                    
+                    const radius = 2.01; // نصف قطر أكبر قليلاً من الأرض
+                    
+                    const x = -(radius * Math.sin(phi) * Math.cos(theta));
+                    const y = radius * Math.cos(phi);
+                    const z = radius * Math.sin(phi) * Math.sin(theta);
+                    
+                    // إنشاء تسمية الدولة
+                    createCountryLabel(countryName, x, y, z);
+                }
+            });
+        }
+        
+        // إنشاء تسمية الدولة
+        function createCountryLabel(countryName, x, y, z) {
+            const label = document.createElement('div');
+            label.className = 'country-label';
+            label.textContent = countryName;
+            label.setAttribute('data-country', countryName);
+            document.getElementById('container').appendChild(label);
+            
+            countryLabels.push({
+                element: label,
+                country: countryName,
+                position: new THREE.Vector3(x, y, z)
+            });
+        }
+        
+        // تحديث ظهور التسميات
+        function updateLabelsVisibility() {
+            countryLabels.forEach(label => {
+                label.element.style.display = showLabels ? 'block' : 'none';
+            });
+        }
+        
+        // تحديث مواقع التسميات
+        function updateLabels() {
+            countryLabels.forEach(label => {
+                // تحويل الإحداثيات ثلاثية الأبعاد إلى إحداثيات الشاشة
+                const vector = label.position.clone();
+                vector.project(camera);
+                
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
+                
+                // تحديث موقع التسمية
+                label.element.style.left = `${x}px`;
+                label.element.style.top = `${y}px`;
+                
+                // إخفاء التسمية إذا كانت خلف الأرض
+                label.element.style.visibility = vector.z > 1 ? 'hidden' : 'visible';
+            });
         }
         
         function onWindowResize() {
@@ -977,7 +1002,7 @@
                 const lat = 90 - (spherical.phi * 180) / Math.PI;
                 const lon = ((spherical.theta * 180) / Math.PI + 180) % 360 - 180;
                 
-                // تحديد الدولة بناءً على الإحداثيات (محاكاة محسنة)
+                // تحديد الدولة بناءً على الإحداثيات
                 const country = getCountryFromCoords(lat, lon);
                 
                 if (country) {
@@ -988,80 +1013,52 @@
         
         // دالة محسنة لتحديد الدولة بناءً على الإحداثيات
         function getCountryFromCoords(lat, lon) {
-            // في التطبيق الحقيقي، سنستخدم بيانات جغرافية دقيقة
-            // هنا نستخدم محاكاة محسنة باستخدام بيانات الدول المخزنة
-            
-            // البحث عن الدولة الأقرب للإحداثيات
             let closestCountry = null;
             let minDistance = Infinity;
             
-            allCountries.forEach(country => {
-                if (country.lat && country.lon) {
+            allCountries.forEach(countryName => {
+                const countryData = allCountriesData[countryName];
+                if (countryData && countryData.lat && countryData.lon) {
                     const distance = Math.sqrt(
-                        Math.pow(country.lat - lat, 2) + Math.pow(country.lon - lon, 2)
+                        Math.pow(countryData.lat - lat, 2) + Math.pow(countryData.lon - lon, 2)
                     );
                     
                     if (distance < minDistance) {
                         minDistance = distance;
-                        closestCountry = country.name;
+                        closestCountry = countryName;
                     }
                 }
             });
             
-            // إذا لم نجد دولة قريبة، نختار عشوائياً
-            if (!closestCountry && allCountries.length > 0) {
-                const index = Math.floor(Math.random() * allCountries.length);
-                closestCountry = allCountries[index].name;
-            }
-            
             return closestCountry;
         }
         
-        async function showCountryInfo(countryName) {
+        function showCountryInfo(countryName) {
             const infoPanel = document.getElementById('info-panel');
+            const countryData = allCountriesData[countryName];
             
-            // عرض رسالة تحميل
-            document.querySelector('.country-name').innerHTML = `${countryName} <span class="loading"></span>`;
-            document.querySelector('.official-name').textContent = 'جاري تحميل البيانات...';
-            infoPanel.classList.remove('hidden');
-            
-            try {
-                const countryData = await fetchCountryData(countryName);
-                
-                if (countryData) {
-                    document.querySelector('.country-name').textContent = countryName;
-                    document.querySelector('.official-name').textContent = countryData.officialName;
-                    document.querySelector('.flag').style.backgroundImage = `url(${countryData.flag})`;
-                    
-                    const infoItems = document.querySelectorAll('.info-item');
-                    infoItems[0].querySelector('.info-value').textContent = countryData.capital;
-                    infoItems[1].querySelector('.info-value').textContent = countryData.continent;
-                    infoItems[2].querySelector('.info-value').textContent = countryData.location;
-                    infoItems[3].querySelector('.info-value').textContent = countryData.area;
-                    infoItems[4].querySelector('.info-value').textContent = countryData.population;
-                    infoItems[5].querySelector('.info-value').textContent = countryData.government;
-                    infoItems[6].querySelector('.info-value').textContent = countryData.currency;
-                    infoItems[7].querySelector('.info-value').textContent = countryData.language;
-                    infoItems[8].querySelector('.info-value').textContent = countryData.history;
-                    
-                    const powerLevel = document.querySelector('.power-level');
-                    const powerValue = document.querySelector('.power-value');
-                    powerLevel.style.width = `${countryData.power}%`;
-                    powerValue.textContent = `${countryData.power}%`;
-                } else {
-                    document.querySelector('.country-name').textContent = countryName;
-                    document.querySelector('.official-name').textContent = 'بيانات غير متوفرة';
-                    document.querySelector('.flag').style.backgroundImage = 'none';
-                    
-                    const infoItems = document.querySelectorAll('.info-item');
-                    infoItems.forEach(item => {
-                        item.querySelector('.info-value').textContent = 'غير متوفر';
-                    });
-                }
-            } catch (error) {
+            if (countryData) {
                 document.querySelector('.country-name').textContent = countryName;
-                document.querySelector('.official-name').textContent = 'خطأ في تحميل البيانات';
-                console.error('Error showing country info:', error);
+                document.querySelector('.official-name').textContent = countryData.officialName;
+                document.querySelector('.flag').style.backgroundImage = `url(${countryData.flag})`;
+                
+                const infoItems = document.querySelectorAll('.info-item');
+                infoItems[0].querySelector('.info-value').textContent = countryData.capital;
+                infoItems[1].querySelector('.info-value').textContent = countryData.continent;
+                infoItems[2].querySelector('.info-value').textContent = countryData.location;
+                infoItems[3].querySelector('.info-value').textContent = countryData.area;
+                infoItems[4].querySelector('.info-value').textContent = countryData.population;
+                infoItems[5].querySelector('.info-value').textContent = countryData.government;
+                infoItems[6].querySelector('.info-value').textContent = countryData.currency;
+                infoItems[7].querySelector('.info-value').textContent = countryData.language;
+                infoItems[8].querySelector('.info-value').textContent = countryData.history;
+                
+                const powerLevel = document.querySelector('.power-level');
+                const powerValue = document.querySelector('.power-value');
+                powerLevel.style.width = `${countryData.power}%`;
+                powerValue.textContent = `${countryData.power}%`;
+                
+                infoPanel.classList.remove('hidden');
             }
         }
         
@@ -1073,15 +1070,17 @@
                 earth.rotation.y += 0.001;
             }
             
+            // تحديث التسميات
+            updateLabels();
+            
             controls.update();
             renderer.render(scene, camera);
         }
         
         // بدء التطبيق
         createStars();
-        fetchAllCountries().then(() => {
-            init();
-        });
+        setupSearch();
+        init();
     </script>
 </body>
 </html>
