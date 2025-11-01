@@ -1,1086 +1,213 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>زيدان - الكرة الأرضية التفاعلية</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: #000;
-            color: #fff;
-            overflow: hidden;
-            height: 100vh;
-        }
-        
-        #container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-        }
-        
-        #earth-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        
-        #info-panel {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 380px;
-            background: rgba(10, 15, 35, 0.85);
-            backdrop-filter: blur(15px);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-            z-index: 2;
-            transition: all 0.3s ease;
-            max-height: calc(100vh - 40px);
-            overflow-y: auto;
-            border: 1px solid rgba(79, 195, 247, 0.3);
-        }
-        
-        #info-panel.hidden {
-            opacity: 0;
-            transform: translateX(20px);
-            pointer-events: none;
-        }
-        
-        .country-name {
-            font-size: 26px;
-            margin-bottom: 15px;
-            color: #4fc3f7;
-            border-bottom: 2px solid #4fc3f7;
-            padding-bottom: 10px;
-            text-align: center;
-        }
-        
-        .official-name {
-            font-size: 16px;
-            color: #aaa;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .flag {
-            width: 100%;
-            height: 180px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        }
-        
-        .info-item {
-            margin-bottom: 12px;
-            display: flex;
-            align-items: flex-start;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #4fc3f7;
-            min-width: 120px;
-        }
-        
-        .info-value {
-            flex: 1;
-            line-height: 1.5;
-        }
-        
-        .power-meter {
-            height: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            margin-top: 5px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .power-level {
-            height: 100%;
-            background: linear-gradient(90deg, #f44336, #ff9800, #4caf50);
-            border-radius: 10px;
-            transition: width 1s ease;
-        }
-        
-        .power-value {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 0 0 3px rgba(0, 0, 0, 0.7);
-        }
-        
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 2;
-        }
-        
-        .control-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(10, 15, 35, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(79, 195, 247, 0.3);
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .control-btn:hover {
-            background: rgba(20, 30, 70, 0.9);
-            transform: scale(1.1);
-            border-color: #4fc3f7;
-        }
-        
-        #title {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            z-index: 2;
-            background: rgba(10, 15, 35, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 15px 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(79, 195, 247, 0.3);
-        }
-        
-        h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-            background: linear-gradient(90deg, #4fc3f7, #29b6f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .subtitle {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-        
-        #search-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 2;
-            width: 300px;
-        }
-        
-        #search-box {
-            width: 100%;
-            padding: 12px 20px;
-            border-radius: 30px;
-            border: 1px solid rgba(79, 195, 247, 0.3);
-            background: rgba(10, 15, 35, 0.8);
-            backdrop-filter: blur(10px);
-            color: white;
-            font-size: 16px;
-            outline: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        #search-box:focus {
-            border-color: #4fc3f7;
-            box-shadow: 0 5px 20px rgba(79, 195, 247, 0.3);
-        }
-        
-        #search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(10, 15, 35, 0.9);
-            backdrop-filter: blur(15px);
-            border-radius: 10px;
-            margin-top: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(79, 195, 247, 0.3);
-            display: none;
-        }
-        
-        .search-result {
-            padding: 12px 20px;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s ease;
-        }
-        
-        .search-result:hover {
-            background: rgba(79, 195, 247, 0.1);
-        }
-        
-        .search-result:last-child {
-            border-bottom: none;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #4fc3f7;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 768px) {
-            #info-panel {
-                width: 320px;
-                right: 10px;
-                top: 10px;
-            }
-            
-            #controls {
-                bottom: 10px;
-                left: 10px;
-            }
-            
-            #search-container {
-                width: 280px;
-                left: 10px;
-            }
-        }
-        
-        /* تأثير النجوم */
-        #stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-        }
-        
-        .star {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            animation: twinkle 5s infinite;
-        }
-        
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.2; }
-            50% { opacity: 1; }
-        }
-        
-        .country-label {
-            position: absolute;
-            color: white;
-            font-size: 12px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 2px 6px;
-            border-radius: 4px;
-            pointer-events: none;
-            z-index: 10;
-            transform: translate(-50%, -50%);
-            white-space: nowrap;
-            display: none;
-        }
-        
-        .highlight {
-            position: absolute;
-            background: rgba(79, 195, 247, 0.3);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            transition: all 0.3s ease;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>موقع الجغرافيا العالمي | زيدان</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Cairo", sans-serif;
+      background: #0b132b;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    header {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 20px;
+      border-radius: 12px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      margin: 0 0 10px 0;
+      color: #00d1ff;
+    }
+
+    #searchBox {
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      width: 200px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    #infoBox {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 280px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
+      padding: 15px;
+      display: none;
+    }
+
+    #infoBox img {
+      width: 60px;
+      height: auto;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    #infoBox h2 {
+      margin: 5px 0;
+      color: #00ffcc;
+    }
+
+    #globeCanvas {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  </style>
 </head>
 <body>
-    <div id="stars"></div>
-    
-    <div id="container">
-        <div id="title">
-            <h1>زيدان - الكرة الأرضية التفاعلية</h1>
-            <div class="subtitle">استكشف العالم بلمسة زر - جميع الدول مع الحدود</div>
-        </div>
-        
-        <div id="search-container">
-            <input type="text" id="search-box" placeholder="ابحث عن دولة...">
-            <div id="search-results"></div>
-        </div>
-        
-        <div id="earth-container"></div>
-        
-        <div id="info-panel" class="hidden">
-            <div class="country-name">اختر دولة</div>
-            <div class="official-name">-</div>
-            <div class="flag"></div>
-            <div class="info-item">
-                <div class="info-label">العاصمة:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">القارة:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">الموقع:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">المساحة:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">عدد السكان:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">النظام السياسي:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">العملة:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">اللغة الرسمية:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">التاريخ:</div>
-                <div class="info-value">-</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">القوة العالمية:</div>
-                <div class="info-value">
-                    <div class="power-meter">
-                        <div class="power-level" style="width: 0%"></div>
-                        <div class="power-value">0%</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="controls">
-            <button class="control-btn" id="zoom-in">+</button>
-            <button class="control-btn" id="zoom-out">-</button>
-            <button class="control-btn" id="reset">↺</button>
-            <button class="control-btn" id="toggle-labels">A</button>
-        </div>
-    </div>
+  <header>
+    <h1>🌍 موقع الجغرافيا العالمي</h1>
+    <input type="text" id="searchBox" placeholder="ابحث عن دولة...">
+  </header>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
-    <script>
-        // بيانات جميع الدول مع معلوماتها
-        const allCountriesData = {
-            "مصر": {
-                officialName: "جمهورية مصر العربية",
-                capital: "القاهرة",
-                continent: "أفريقيا",
-                location: "شمال أفريقيا",
-                area: "1,010,408 كم²",
-                population: "104,258,327 نسمة",
-                government: "جمهورية",
-                currency: "جنيه مصري",
-                language: "العربية",
-                history: "مصر من أقدم الحضارات في العالم، وتشتهر بأهرامات الجيزة وأبو الهول وآثارها الفرعونية العريقة.",
-                power: 75,
-                lat: 26.8206,
-                lon: 30.8025,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjY2UxMTIzIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwyMDBoOTAwdjIwMGgtOTAweiIvPjxwYXRoIGZpbGw9IjAwMCIgZD0ibTAsNDAwaDkwMHYyMDBoLTkwMHoiLz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJtNDUwLDMwMGMyNC44MTMsMCA0NS00NS4wNjMgNDUtNDVzLTIwLjE4Ny00NS00NS00NS00NSw0NS4wNjMtNDUsNDUsMjAuMTg3LDQ1LDQ1LDQ1eiIvPjxwYXRoIGQ9Im00MjAsMjY1YzAsMTYuNTY5IDEzLjQzMSwzMCAzMCwzMHMzMC0xMy40MzEsMzAtMzAtMTMuNDMxLTMwLTMwLTMwLTMwLDEzLjQzMS0zMCwzMHoiLz48L2c+PC9zdmc+"
-            },
-            "السعودية": {
-                officialName: "المملكة العربية السعودية",
-                capital: "الرياض",
-                continent: "آسيا",
-                location: "شبه الجزيرة العربية",
-                area: "2,149,690 كم²",
-                population: "35,013,414 نسمة",
-                government: "ملكية مطلقة",
-                currency: "ريال سعودي",
-                language: "العربية",
-                history: "تأسست المملكة العربية السعودية عام 1932 على يد الملك عبد العزيز آل سعود، وهي موطن للحرمين الشريفين في مكة والمدينة.",
-                power: 85,
-                lat: 23.8859,
-                lon: 45.0792,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDA2NDAwIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDA2NDAwIiBkPSJtMCwwaDI3MHY2MDBoLTI3MHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMTg1LDI1MGwzNSwyNy0xMy00Mmg0MmwtMzUtMjcsMTMsNDJoLTQyeiIvPjwvc3ZnPg=="
-            },
-            "الولايات المتحدة": {
-                officialName: "الولايات المتحدة الأمريكية",
-                capital: "واشنطن العاصمة",
-                continent: "أمريكا الشمالية",
-                location: "أمريكا الشمالية",
-                area: "9,833,520 كم²",
-                population: "331,893,745 نسمة",
-                government: "جمهورية اتحادية",
-                currency: "دولار أمريكي",
-                language: "الإنجليزية",
-                history: "تأسست الولايات المتحدة بعد إعلان الاستقلال في 4 يوليو 1776، وأصبحت قوة عالمية رائدة في القرن العشرين.",
-                power: 95,
-                lat: 37.0902,
-                lon: -95.7129,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjYmYwYTM3IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCw1N2g5MDB2NTdoLTkwMHptMCwxMTRoOTAwdjU3aC05MDB6bTAsMTE0aDkwMHY1N2gtOTAwem0wLDExNGg5MDB2NTdoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDAyNDY1IiBkPSJtMCwwaDQ1MHYzNDJoLTQ1MHoiLz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJtMjUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0xMDUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0xODUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0yNjUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0zNDUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im00MjUsMjVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0yNSwxMDVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0xMDUsMTA1aDQwdjQwaC00MHoiLz48cGF0aCBkPSJtMTg1LDEwNWg0MHY0MGgtNDB6Ii8+PHBhdGggZD0ibTI2NSwxMDVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0zNDUsMTA1aDQwdjQwaC00MHoiLz48cGF0aCBkPSJtNDI1LDEwNWg0MHY0MGgtNDB6Ii8+PHBhdGggZD0ibTI1LDE4NWg0MHY0MGgtNDB6Ii8+PHBhdGggZD0ibTEwNSwxODVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im0xODUsMTg1aDQwdjQwaC00MHoiLz48cGF0aCBkPSJtMjY1LDE4NWg0MHY0MGgtNDB6Ii8+PHBhdGggZD0ibTM0NSwxODVoNDB2NDBoLTQweiIvPjxwYXRoIGQ9Im00MjUsMTg1aDQwdjQwaC00MHoiLz48L2c+PC9zdmc+"
-            },
-            // يمكن إضافة المزيد من الدول هنا بنفس الطريقة
-            "الصين": {
-                officialName: "جمهورية الصين الشعبية",
-                capital: "بكين",
-                continent: "آسيا",
-                location: "شرق آسيا",
-                area: "9,596,961 كم²",
-                population: "1,411,750,000 نسمة",
-                government: "جمهورية اشتراكية",
-                currency: "يوان صيني",
-                language: "الصينية",
-                history: "الصين من أقدم الحضارات في العالم، مع أكثر من 4000 سنة من التاريخ المسجل.",
-                power: 90,
-                lat: 35.8617,
-                lon: 104.1954,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZGUyOTE2IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJtMTUwLDE1MGwzMCw5MGg5MGwtNzUtNjBoNzUsNjBoLTkwLDB6Ii8+PHBhdGggZD0ibTMwMCwxNTBsLTMwLDkwaC05MGw3NS02MGgtNzVsNzUsNjBoOTB6Ii8+PHBhdGggZD0ibTMwMCw0NTBsMzAtOTBoLTkwbDc1LDYwaC03NWw3NS02MGg5MHoiLz48cGF0aCBkPSJtMTUwLDQ1MGwzMC05MGg5MGwtNzUsNjBoNzVsLTc1LTYwaC05MHoiLz48L2c+PC9zdmc+"
-            },
-            "البرازيل": {
-                officialName: "جمهورية البرازيل الاتحادية",
-                capital: "برازيليا",
-                continent: "أمريكا الجنوبية",
-                location: "أمريكا الجنوبية",
-                area: "8,515,767 كم²",
-                population: "213,993,437 نسمة",
-                government: "جمهورية اتحادية",
-                currency: "ريال برازيلي",
-                language: "البرتغالية",
-                history: "البرازيل أكبر دولة في أمريكا الجنوبية ومنطقة أمريكا اللاتينية، وخامس أكبر دولة في العالم.",
-                power: 80,
-                lat: -14.2350,
-                lon: -51.9253,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDA5YzM5IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtNDUwLDMwMGwtMjAtMTQwaC00MGwtMjAsMTQwaDQwbC0yMCwxNDBoNDBsMjAtMTQwaDQwbDIwLDE0MGg0MGwtMjAtMTQwaDQweiIvPjxjaXJjbGUgZmlsbD0iI2ZmZiIgY3g9IjQ1MCIgY3k9IjMwMCIgcj0iODAiLz48Y2lyY2xlIGZpbGw9IiMwMDljMzkiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjYwIi8+PC9zdmc+"
-            },
-            "فرنسا": {
-                officialName: "الجمهورية الفرنسية",
-                capital: "باريس",
-                continent: "أوروبا",
-                location: "أوروبا الغربية",
-                area: "643,801 كم²",
-                population: "67,413,000 نسمة",
-                government: "جمهورية",
-                currency: "يورو",
-                language: "الفرنسية",
-                history: "فرنسا من أقدم الدول الأوروبية، وتشتهر بتراثها الثقافي الغني وتأثيرها العالمي في الفنون والعلوم.",
-                power: 85,
-                lat: 46.6034,
-                lon: 1.8883,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDAyNjU0IiBkPSJtMCwwaDMwMHY2MDBoLTMwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMzAwLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNlZTAwMTciIGQ9Im02MDAsMGgzMDB2NjAwaC0zMDB6Ii8+PC9zdmc+"
-            },
-            "اليابان": {
-                officialName: "اليابان",
-                capital: "طوكيو",
-                continent: "آسيا",
-                location: "شرق آسيا",
-                area: "377,975 كم²",
-                population: "125,800,000 نسمة",
-                government: "ملكية دستورية",
-                currency: "ين ياباني",
-                language: "اليابانية",
-                history: "اليابان دولة جزرية في شرق آسيا، تشتهر بثقافتها الفريدة وتقنيتها المتقدمة.",
-                power: 88,
-                lat: 36.2048,
-                lon: 138.2529,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48Y2lyY2xlIGZpbGw9IiNiYzAwMDAiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjE4MCIvPjwvc3ZnPg=="
-            },
-            "أستراليا": {
-                officialName: "كومنولث أستراليا",
-                capital: "كانبرا",
-                continent: "أوقيانوسيا",
-                location: "أوقيانوسيا",
-                area: "7,692,024 كم²",
-                population: "25,766,600 نسمة",
-                government: "ملكية دستورية",
-                currency: "دولار أسترالي",
-                language: "الإنجليزية",
-                history: "أستراليا أصغر قارة في العالم وسادس أكبر دولة من حيث المساحة.",
-                power: 82,
-                lat: -25.2744,
-                lon: 133.7751,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDAwMDY1IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtNDUwLDMwMGwtMjAtMTQwaC00MGwtMjAsMTQwaDQwbC0yMCwxNDBoNDBsMjAtMTQwaDQwbDIwLDE0MGg0MGwtMjAtMTQwaDQweiIvPjxjaXJjbGUgZmlsbD0iI2ZmZiIgY3g9IjQ1MCIgY3k9IjMwMCIgcj0iODAiLz48Y2lyY2xlIGZpbGw9IiMwMDAwNjUiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjYwIi8+PC9zdmc+"
-            },
-            "روسيا": {
-                officialName: "الاتحاد الروسي",
-                capital: "موسكو",
-                continent: "أوروبا/آسيا",
-                location: "أوروبا الشرقية وشمال آسيا",
-                area: "17,098,246 كم²",
-                population: "146,171,015 نسمة",
-                government: "جمهورية اتحادية",
-                currency: "روبل روسي",
-                language: "الروسية",
-                history: "روسيا أكبر دولة في العالم من حيث المساحة، وتمتد عبر أوروبا الشرقية وشمال آسيا.",
-                power: 90,
-                lat: 61.5240,
-                lon: 105.3188,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHYyMDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDAzOWE1IiBkPSJtMCw0MDBoOTAwdjIwMGgtOTAweiIvPjxwYXRoIGZpbGw9IiNkNTJCMzciIGQ9Im0wLDIwMGg5MDB2MjAwaC05MDB6Ii8+PC9zdmc+"
-            },
-            "الهند": {
-                officialName: "جمهورية الهند",
-                capital: "نيودلهي",
-                continent: "آسيا",
-                location: "جنوب آسيا",
-                area: "3,287,263 كم²",
-                population: "1,380,004,385 نسمة",
-                government: "جمهورية اتحادية",
-                currency: "روبية هندية",
-                language: "الهندية، الإنجليزية",
-                history: "الهند من أقدم الحضارات في العالم، مع تاريخ يمتد لأكثر من 5000 سنة.",
-                power: 80,
-                lat: 20.5937,
-                lon: 78.9629,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmY5NDM0IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwyMDBoOTAwdjIwMGgtOTAweiIvPjxwYXRoIGZpbGw9IiMwODk3NDYiIGQ9Im0wLDQwMGg5MDB2MjAwaC05MDB6Ii8+PC9zdmc+"
-            },
-            "كندا": {
-                officialName: "كندا",
-                capital: "أوتاوا",
-                continent: "أمريكا الشمالية",
-                location: "أمريكا الشمالية",
-                area: "9,984,670 كم²",
-                population: "38,005,238 نسمة",
-                government: "ملكية دستورية",
-                currency: "دولار كندي",
-                language: "الإنجليزية، الفرنسية",
-                history: "كندا ثاني أكبر دولة في العالم من حيث المساحة، وتشتهر بطبيعتها الخلابة وتنوعها الثقافي.",
-                power: 85,
-                lat: 56.1304,
-                lon: -106.3468,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmYwMDAwIiBkPSJtMCwwaDMwMHY2MDBoLTMwMHptNjAwLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNmZjAwMDAiIGQ9Im00MjUsMzAwbC03NSw1MGg1MGwtMjUsMTAwaDUwbC03NS01MGg1MGwtMjUtMTAwaDUweiIvPjwvc3ZnPg=="
-            },
-            "ألمانيا": {
-                officialName: "جمهورية ألمانيا الاتحادية",
-                capital: "برلين",
-                continent: "أوروبا",
-                location: "أوروبا الوسطى",
-                area: "357,022 كم²",
-                population: "83,190,556 نسمة",
-                government: "جمهورية اتحادية",
-                currency: "يورو",
-                language: "الألمانية",
-                history: "ألمانيا من أكبر الاقتصادات في أوروبا والعالم، وتشتهر بتراثها الثقافي والعلمي الغني.",
-                power: 88,
-                lat: 51.1657,
-                lon: 10.4515,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHYyMDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmYwMDAwIiBkPSJtMCw0MDBoOTAwdjIwMGgtOTAweiIvPjxwYXRoIGZpbGw9IiMwMDAwMDAiIGQ9Im0wLDIwMGg5MDB2MjAwaC05MDB6Ii8+PC9zdmc+"
-            },
-            "المملكة المتحدة": {
-                officialName: "المملكة المتحدة لبريطانيا العظمى وأيرلندا الشمالية",
-                capital: "لندن",
-                continent: "أوروبا",
-                location: "أوروبا الغربية",
-                area: "242,495 كم²",
-                population: "67,081,000 نسمة",
-                government: "ملكية دستورية",
-                currency: "جنيه إسترليني",
-                language: "الإنجليزية",
-                history: "المملكة المتحدة دولة جزرية قبالة الساحل الشمالي الغربي لأوروبا القارية.",
-                power: 90,
-                lat: 55.3781,
-                lon: -3.4360,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDAyNDY1IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDMwMHY2MDBoLTMwMHptNjAwLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNmZjAwMDAiIGQ9Im0wLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNmZjAwMDAiIGQ9Im02MDAsMGgzMDB2NjAwaC0zMDB6Ii8+PC9zdmc+"
-            },
-            "إيطاليا": {
-                officialName: "الجمهورية الإيطالية",
-                capital: "روما",
-                continent: "أوروبا",
-                location: "أوروبا الجنوبية",
-                area: "301,340 كم²",
-                population: "60,317,116 نسمة",
-                government: "جمهورية",
-                currency: "يورو",
-                language: "الإيطالية",
-                history: "إيطاليا موطن للإمبراطورية الرومانية القديمة وعصر النهضة، وتشتهر بتراثها الثقافي والفني الغني.",
-                power: 82,
-                lat: 41.8719,
-                lon: 12.5674,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjMDA5MjQ2IiBkPSJtMCwwaDMwMHY2MDBoLTMwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMzAwLDBoMzAwdjYwMGgtMzAweiIvPjxwYXRoIGZpbGw9IiNjZTJhMkEiIGQ9Im02MDAsMGgzMDB2NjAwaC0zMDB6Ii8+PC9zdmc+"
-            },
-            "كوريا الجنوبية": {
-                officialName: "جمهورية كوريا",
-                capital: "سيول",
-                continent: "آسيا",
-                location: "شرق آسيا",
-                area: "100,363 كم²",
-                population: "51,744,876 نسمة",
-                government: "جمهورية",
-                currency: "وون كوري جنوبي",
-                language: "الكورية",
-                history: "كوريا الجنوبية دولة متقدمة تقنياً واقتصادياً، تشتهر بثقافة البوب الكوري (K-pop) والتكنولوجيا.",
-                power: 85,
-                lat: 35.9078,
-                lon: 127.7669,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48Y2lyY2xlIGZpbGw9IiMwMDAwODAiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjE4MCIvPjxwYXRoIGZpbGw9IiNjZDIwMmEiIGQ9Im0yNzAsMzAwYzAtOTkuNDgxIDgwLjUxOS0xODAgMTgwLTE4MHMxODAsODAuNTE5IDE4MCwxODAtODAuNTE5LDE4MC0xODAsMTgwLTE4MC04MC41MTktMTgwLTE4MHoiLz48L2c+PC9zdmc+"
-            },
-            "المكسيك": {
-                officialName: "الولايات المتحدة المكسيكية",
-                capital: "مكسيكو سيتي",
-                continent: "أمريكا الشمالية",
-                location: "أمريكا الشمالية",
-                area: "1,964,375 كم²",
-                population: "128,932,753 نسمة",
-                government: "جمهورية اتحادية",
-                currency: "بيزو مكسيكي",
-                language: "الإسبانية",
-                history: "المكسيك موطن لحضارات ما قبل كولومبوس مثل المايا والأزتيك، وتشتهر بثقافتها الغنية والمتنوعة.",
-                power: 78,
-                lat: 23.6345,
-                lon: -102.5528,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDA2ODQ3IiBkPSJtMCwwaDMwMHY2MDBoLTMwMHoiLz48cGF0aCBmaWxsPSIjY2UxMTIzIiBkPSJtNjAwLDBoMzAwdjYwMGgtMzAweiIvPjwvc3ZnPg=="
-            },
-            "إندونيسيا": {
-                officialName: "جمهورية إندونيسيا",
-                capital: "جاكرتا",
-                continent: "آسيا",
-                location: "جنوب شرق آسيا",
-                area: "1,904,569 كم²",
-                population: "273,523,615 نسمة",
-                government: "جمهورية",
-                currency: "روبية إندونيسية",
-                language: "الإندونيسية",
-                history: "إندونيسيا أكبر دولة جزرية في العالم، تضم أكثر من 17,000 جزيرة وثقافات متنوعة.",
-                power: 75,
-                lat: -0.7893,
-                lon: 113.9213,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHYzMDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjY2UxMTIzIiBkPSJtMCwzMDBoOTAwdjMwMGgtOTAweiIvPjwvc3ZnPg=="
-            },
-            "تركيا": {
-                officialName: "جمهورية تركيا",
-                capital: "أنقرة",
-                continent: "أوروبا/آسيا",
-                location: "الشرق الأوسط",
-                area: "783,356 كم²",
-                population: "84,339,067 نسمة",
-                government: "جمهورية",
-                currency: "ليرة تركية",
-                language: "التركية",
-                history: "تركيا جسر بين أوروبا وآسيا، وموطن للإمبراطورية العثمانية التي حكمت لقرون.",
-                power: 80,
-                lat: 38.9637,
-                lon: 35.2433,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZTMwOTIzIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48Y2lyY2xlIGZpbGw9IiNmZmYiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjE4MCIvPjxjaXJjbGUgZmlsbD0iI2UzMDkyMyIgY3g9IjQwMCIgY3k9IjMwMCIgcj0iNjAiLz48L2c+PC9zdmc+"
-            },
-            "جنوب أفريقيا": {
-                officialName: "جمهورية جنوب أفريقيا",
-                capital: "بريتوريا، بلومفونتين، كيب تاون",
-                continent: "أفريقيا",
-                location: "أفريقيا الجنوبية",
-                area: "1,221,037 كم²",
-                population: "59,308,690 نسمة",
-                government: "جمهورية",
-                currency: "راند جنوب أفريقي",
-                language: "الإنجليزية، الأفريقانية، وغيرها",
-                history: "جنوب أفريقيا دولة متنوعة ثقافياً واقتصادياً، وتشتهر بنضالها ضد الفصل العنصري.",
-                power: 75,
-                lat: -30.5595,
-                lon: 22.9375,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjMDA3ODQ3IiBkPSJtMCwwaDMwMHY2MDBoLTMwMHoiLz48cGF0aCBmaWxsPSIjZmYwMDAwIiBkPSJtNjAwLDBoMzAwdjYwMGgtMzAweiIvPjwvc3ZnPg=="
-            },
-            "الأرجنتين": {
-                officialName: "جمهورية الأرجنتين",
-                capital: "بوينس آيرس",
-                continent: "أمريكا الجنوبية",
-                location: "أمريكا الجنوبية",
-                area: "2,780,400 كم²",
-                population: "45,195,774 نسمة",
-                government: "جمهورية",
-                currency: "بيزو أرجنتيني",
-                language: "الإسبانية",
-                history: "الأرجنتين ثامن أكبر دولة في العالم، وتشتهر بثقافة التانغو واللحم البقري والمناظر الطبيعية الخلابة.",
-                power: 75,
-                lat: -38.4161,
-                lon: -63.6167,
-                flag: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjNzRhQzU0IiBkPSJtMCwwaDkwMHY2MDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMCwwaDkwMHYzMDBoLTkwMHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtNDUwLDMwMGwtMjAtMTQwaC00MGwtMjAsMTQwaDQwbC0yMCwxNDBoNDBsMjAtMTQwaDQwbDIwLDE0MGg0MGwtMjAtMTQwaDQweiIvPjxjaXJjbGUgZmlsbD0iI2ZmZiIgY3g9IjQ1MCIgY3k9IjMwMCIgcj0iODAiLz48Y2lyY2xlIGZpbGw9IiM3NGFDNTQiIGN4PSI0NTAiIGN5PSIzMDAiIHI9IjYwIi8+PC9zdmc+"
-            }
-        };
+  <canvas id="globeCanvas"></canvas>
 
-        // متغيرات عامة
-        let scene, camera, renderer, earth, controls;
-        let raycaster, mouse;
-        let countriesCache = {};
-        let allCountries = Object.keys(allCountriesData);
-        let countryLabels = [];
-        let showLabels = true;
+  <div id="infoBox">
+    <img id="countryFlag" src="" alt="علم الدولة">
+    <h2 id="countryName"></h2>
+    <p id="countryContinent"></p>
+    <p id="countryLocation"></p>
+    <p id="countryPower"></p>
+    <p id="countryHistory"></p>
+  </div>
 
-        // إنشاء النجوم
-        function createStars() {
-            const starsContainer = document.getElementById('stars');
-            const starCount = 500;
-            
-            for (let i = 0; i < starCount; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                
-                const size = Math.random() * 3;
-                star.style.width = `${size}px`;
-                star.style.height = `${size}px`;
-                
-                star.style.left = `${Math.random() * 100}%`;
-                star.style.top = `${Math.random() * 100}%`;
-                
-                star.style.animationDelay = `${Math.random() * 5}s`;
-                
-                starsContainer.appendChild(star);
-            }
-        }
+  <footer>تم التطوير بواسطة <strong>زيدان</strong> © 2025</footer>
 
-        // إعداد محرك البحث
-        function setupSearch() {
-            const searchBox = document.getElementById('search-box');
-            const searchResults = document.getElementById('search-results');
-            
-            searchBox.addEventListener('input', function() {
-                const query = this.value.trim().toLowerCase();
-                searchResults.innerHTML = '';
-                
-                if (query.length < 2) {
-                    searchResults.style.display = 'none';
-                    return;
-                }
-                
-                const matchingCountries = allCountries.filter(country => 
-                    country.toLowerCase().includes(query)
-                );
-                
-                if (matchingCountries.length > 0) {
-                    matchingCountries.forEach(country => {
-                        const resultElement = document.createElement('div');
-                        resultElement.className = 'search-result';
-                        resultElement.textContent = country;
-                        resultElement.addEventListener('click', () => {
-                            showCountryInfo(country);
-                            searchResults.style.display = 'none';
-                            searchBox.value = '';
-                        });
-                        searchResults.appendChild(resultElement);
-                    });
-                    searchResults.style.display = 'block';
-                } else {
-                    searchResults.style.display = 'none';
-                }
-            });
-            
-            // إغلاق نتائج البحث عند النقر خارجها
-            document.addEventListener('click', function(e) {
-                if (!searchBox.contains(e.target) && !searchResults.contains(e.target)) {
-                    searchResults.style.display = 'none';
-                }
-            });
-        }
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three-globe@2.30.0"></script>
+  <script>
+    const countriesData = [
+      {
+        name: "مصر",
+        flag: "https://flagcdn.com/w80/eg.png",
+        continent: "أفريقيا",
+        location: "شمال شرق أفريقيا",
+        power: "قوة إقليمية مؤثرة",
+        history: "حضارة الفراعنة، من أقدم حضارات العالم."
+      },
+      {
+        name: "السعودية",
+        flag: "https://flagcdn.com/w80/sa.png",
+        continent: "آسيا",
+        location: "شبه الجزيرة العربية",
+        power: "قوة اقتصادية وسياسية في الشرق الأوسط",
+        history: "تأسست المملكة عام 1932 على يد الملك عبدالعزيز."
+      },
+      {
+        name: "اليابان",
+        flag: "https://flagcdn.com/w80/jp.png",
+        continent: "آسيا",
+        location: "شرق آسيا",
+        power: "قوة صناعية وتكنولوجية كبرى",
+        history: "بلد الساموراي والتطور التكنولوجي."
+      },
+      {
+        name: "الولايات المتحدة",
+        flag: "https://flagcdn.com/w80/us.png",
+        continent: "أمريكا الشمالية",
+        location: "بين كندا والمكسيك",
+        power: "القوة العظمى الأولى في العالم",
+        history: "استقلت عام 1776 وأصبحت مركزًا عالميًا للعلوم."
+      },
+      {
+        name: "فرنسا",
+        flag: "https://flagcdn.com/w80/fr.png",
+        continent: "أوروبا",
+        location: "غرب أوروبا",
+        power: "دولة قوية سياسيًا وثقافيًا",
+        history: "الثورة الفرنسية عام 1789 غيرت أوروبا."
+      },
+      {
+        name: "البرازيل",
+        flag: "https://flagcdn.com/w80/br.png",
+        continent: "أمريكا الجنوبية",
+        location: "شرق أمريكا الجنوبية",
+        power: "أكبر اقتصاد في أمريكا الجنوبية",
+        history: "نالت استقلالها عام 1822 عن البرتغال."
+      }
+    ];
 
-        // تهيئة المشهد ثلاثي الأبعاد
-        function init() {
-            // إنشاء المشهد
-            scene = new THREE.Scene();
-            
-            // إنشاء الكاميرا
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 5;
-            
-            // إنشاء العارض
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            document.getElementById('earth-container').appendChild(renderer.domElement);
-            
-            // إضافة عناصر التحكم
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.minDistance = 3;
-            controls.maxDistance = 10;
-            
-            // إضافة الإضاءة
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 3, 5);
-            scene.add(directionalLight);
-            
-            // إنشاء الكرة الأرضية
-            createEarth();
-            
-            // إعداد Raycaster للكشف عن النقر
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-            
-            // إضافة مستمعي الأحداث
-            window.addEventListener('resize', onWindowResize);
-            renderer.domElement.addEventListener('click', onCanvasClick);
-            
-            document.getElementById('zoom-in').addEventListener('click', () => {
-                controls.object.position.multiplyScalar(0.9);
-            });
-            
-            document.getElementById('zoom-out').addEventListener('click', () => {
-                controls.object.position.multiplyScalar(1.1);
-            });
-            
-            document.getElementById('reset').addEventListener('click', () => {
-                controls.reset();
-                camera.position.z = 5;
-            });
-            
-            document.getElementById('toggle-labels').addEventListener('click', () => {
-                showLabels = !showLabels;
-                updateLabelsVisibility();
-            });
-            
-            // بدء التقديم
-            animate();
-        }
-        
-        function createEarth() {
-            // إنشاء كرة الأرض
-            const geometry = new THREE.SphereGeometry(2, 64, 64);
-            
-            // إنشاء نسيج الأرض
-            const textureLoader = new THREE.TextureLoader();
-            const earthTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
-            const earthBumpMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg');
-            const earthSpecularMap = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg');
-            
-            const material = new THREE.MeshPhongMaterial({
-                map: earthTexture,
-                bumpMap: earthBumpMap,
-                bumpScale: 0.05,
-                specularMap: earthSpecularMap,
-                specular: new THREE.Color(0x333333),
-                shininess: 5
-            });
-            
-            earth = new THREE.Mesh(geometry, material);
-            scene.add(earth);
-            
-            // إضافة السحب
-            const cloudsGeometry = new THREE.SphereGeometry(2.03, 64, 64);
-            const cloudsTexture = textureLoader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png');
-            const cloudsMaterial = new THREE.MeshPhongMaterial({
-                map: cloudsTexture,
-                transparent: true,
-                opacity: 0.4
-            });
-            
-            const clouds = new THREE.Mesh(cloudsGeometry, cloudsMaterial);
-            scene.add(clouds);
-            
-            // إضافة حدود الدول وأسمائها
-            createCountryBorders();
-        }
-        
-        // إنشاء حدود الدول وأسمائها
-        function createCountryBorders() {
-            // في التطبيق الحقيقي، سنستخدم بيانات جغرافية دقيقة للحدود
-            // هنا نستخدم نقاط عشوائية لتقليد وجود حدود
-            
-            allCountries.forEach(countryName => {
-                const countryData = allCountriesData[countryName];
-                if (countryData && countryData.lat && countryData.lon) {
-                    // تحويل خطوط الطول والعرض إلى إحداثيات ثلاثية الأبعاد
-                    const phi = (90 - countryData.lat) * Math.PI / 180;
-                    const theta = (countryData.lon + 180) * Math.PI / 180;
-                    
-                    const radius = 2.01; // نصف قطر أكبر قليلاً من الأرض
-                    
-                    const x = -(radius * Math.sin(phi) * Math.cos(theta));
-                    const y = radius * Math.cos(phi);
-                    const z = radius * Math.sin(phi) * Math.sin(theta);
-                    
-                    // إنشاء تسمية الدولة
-                    createCountryLabel(countryName, x, y, z);
-                }
-            });
-        }
-        
-        // إنشاء تسمية الدولة
-        function createCountryLabel(countryName, x, y, z) {
-            const label = document.createElement('div');
-            label.className = 'country-label';
-            label.textContent = countryName;
-            label.setAttribute('data-country', countryName);
-            document.getElementById('container').appendChild(label);
-            
-            countryLabels.push({
-                element: label,
-                country: countryName,
-                position: new THREE.Vector3(x, y, z)
-            });
-        }
-        
-        // تحديث ظهور التسميات
-        function updateLabelsVisibility() {
-            countryLabels.forEach(label => {
-                label.element.style.display = showLabels ? 'block' : 'none';
-            });
-        }
-        
-        // تحديث مواقع التسميات
-        function updateLabels() {
-            countryLabels.forEach(label => {
-                // تحويل الإحداثيات ثلاثية الأبعاد إلى إحداثيات الشاشة
-                const vector = label.position.clone();
-                vector.project(camera);
-                
-                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-                const y = (-(vector.y * 0.5) + 0.5) * window.innerHeight;
-                
-                // تحديث موقع التسمية
-                label.element.style.left = `${x}px`;
-                label.element.style.top = `${y}px`;
-                
-                // إخفاء التسمية إذا كانت خلف الأرض
-                label.element.style.visibility = vector.z > 1 ? 'hidden' : 'visible';
-            });
-        }
-        
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-        
-        function onCanvasClick(event) {
-            // حساب موضع الماوس في إحداثيات التطبيع (-1 إلى +1)
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            // تحديث Raycaster
-            raycaster.setFromCamera(mouse, camera);
-            
-            // حساب التقاطعات مع الأرض
-            const intersects = raycaster.intersectObject(earth);
-            
-            if (intersects.length > 0) {
-                // الحصول على نقطة التقاطع
-                const intersectPoint = intersects[0].point;
-                
-                // تحويل نقطة التقاطع إلى إحداثيات كروية
-                const spherical = new THREE.Spherical();
-                spherical.setFromVector3(intersectPoint);
-                
-                // تحويل الإحداثيات الكروية إلى خطوط الطول والعرض
-                const lat = 90 - (spherical.phi * 180) / Math.PI;
-                const lon = ((spherical.theta * 180) / Math.PI + 180) % 360 - 180;
-                
-                // تحديد الدولة بناءً على الإحداثيات
-                const country = getCountryFromCoords(lat, lon);
-                
-                if (country) {
-                    showCountryInfo(country);
-                }
-            }
-        }
-        
-        // دالة محسنة لتحديد الدولة بناءً على الإحداثيات
-        function getCountryFromCoords(lat, lon) {
-            let closestCountry = null;
-            let minDistance = Infinity;
-            
-            allCountries.forEach(countryName => {
-                const countryData = allCountriesData[countryName];
-                if (countryData && countryData.lat && countryData.lon) {
-                    const distance = Math.sqrt(
-                        Math.pow(countryData.lat - lat, 2) + Math.pow(countryData.lon - lon, 2)
-                    );
-                    
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestCountry = countryName;
-                    }
-                }
-            });
-            
-            return closestCountry;
-        }
-        
-        function showCountryInfo(countryName) {
-            const infoPanel = document.getElementById('info-panel');
-            const countryData = allCountriesData[countryName];
-            
-            if (countryData) {
-                document.querySelector('.country-name').textContent = countryName;
-                document.querySelector('.official-name').textContent = countryData.officialName;
-                document.querySelector('.flag').style.backgroundImage = `url(${countryData.flag})`;
-                
-                const infoItems = document.querySelectorAll('.info-item');
-                infoItems[0].querySelector('.info-value').textContent = countryData.capital;
-                infoItems[1].querySelector('.info-value').textContent = countryData.continent;
-                infoItems[2].querySelector('.info-value').textContent = countryData.location;
-                infoItems[3].querySelector('.info-value').textContent = countryData.area;
-                infoItems[4].querySelector('.info-value').textContent = countryData.population;
-                infoItems[5].querySelector('.info-value').textContent = countryData.government;
-                infoItems[6].querySelector('.info-value').textContent = countryData.currency;
-                infoItems[7].querySelector('.info-value').textContent = countryData.language;
-                infoItems[8].querySelector('.info-value').textContent = countryData.history;
-                
-                const powerLevel = document.querySelector('.power-level');
-                const powerValue = document.querySelector('.power-value');
-                powerLevel.style.width = `${countryData.power}%`;
-                powerValue.textContent = `${countryData.power}%`;
-                
-                infoPanel.classList.remove('hidden');
-            }
-        }
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // تدوير الأرض ببطء
-            if (earth) {
-                earth.rotation.y += 0.001;
-            }
-            
-            // تحديث التسميات
-            updateLabels();
-            
-            controls.update();
-            renderer.render(scene, camera);
-        }
-        
-        // بدء التطبيق
-        createStars();
-        setupSearch();
-        init();
-    </script>
+    // إعداد الكوكب
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globeCanvas'), antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 250;
+
+    const light = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(light);
+
+    const globe = new ThreeGlobe()
+      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png');
+
+    scene.add(globe);
+
+    const controls = new THREE.TrackballControls(camera, renderer.domElement);
+    controls.minDistance = 150;
+    controls.maxDistance = 400;
+
+    function animate() {
+      globe.rotation.y += 0.0015;
+      controls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // عند البحث
+    const searchBox = document.getElementById('searchBox');
+    const infoBox = document.getElementById('infoBox');
+
+    searchBox.addEventListener('input', e => {
+      const query = e.target.value.trim();
+      if (query === '') {
+        infoBox.style.display = 'none';
+        return;
+      }
+      const country = countriesData.find(c => c.name.includes(query));
+      if (country) showCountryInfo(country);
+      else infoBox.style.display = 'none';
+    });
+
+    function showCountryInfo(country) {
+      document.getElementById('countryFlag').src = country.flag;
+      document.getElementById('countryName').textContent = country.name;
+      document.getElementById('countryContinent').textContent = `🌐 القارة: ${country.continent}`;
+      document.getElementById('countryLocation').textContent = `📍 الموقع: ${country.location}`;
+      document.getElementById('countryPower').textContent = `💪 القوة: ${country.power}`;
+      document.getElementById('countryHistory').textContent = `📖 التاريخ: ${country.history}`;
+      infoBox.style.display = 'block';
+    }
+
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+  </script>
 </body>
 </html>
