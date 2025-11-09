@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #0d3b66; /* لون أزرق */
+            background-color: #0d3b66;
             color: white;
             margin: 0;
             padding: 0;
@@ -30,6 +30,10 @@
             width: 250px;
             border-radius: 10px;
             text-align: center;
+            transition: transform 0.3s;
+        }
+        .movie-card:hover {
+            transform: scale(1.05);
         }
         .movie-card img {
             width: 100%;
@@ -44,6 +48,9 @@
         .movie-card h3 {
             margin: 10px 0 5px;
         }
+        .movie-card p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -52,15 +59,29 @@
     </header>
 
     <div class="movie-container">
-        <!-- بداية الفيلم -->
+        <!-- فيلم 1 -->
         <div class="movie-card">
-            <img src="link_to_movie_poster.jpg" alt="عنوان الفيلم">
-            <h3>عنوان الفيلم</h3>
-            <iframe src="<iframe src="https://www.xnxx.com/embedframe/utcouhf37d3" frameborder=0 width=510 height=400 scrolling=no allowfullscreen=allowfullscreen></iframe>" allowfullscreen></iframe>
+            <img src="https://via.placeholder.com/250x350.png?text=Movie+1" alt="فيلم 1">
+            <h3>فيلم 1</h3>
+            <p>تقييم: 8/10</p>
+            <iframe src="https://www.xnxx.com/video-16dj0h5f/spying_on_stepdaughter_ends_by_creampie_in_her_wet_pussy" allowfullscreen></iframe>
         </div>
-        <!-- نهاية الفيلم -->
 
-        <!-- لو عايز تضيف فيلم جديد، انسخ div ده وعدل الصور والفيديو والعنوان -->
+        <!-- فيلم 2 -->
+        <div class="movie-card">
+            <img src="https://via.placeholder.com/250x350.png?text=Movie+2" alt="فيلم 2">
+            <h3>فيلم 2</h3>
+            <p>تقييم: 7.5/10</p>
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+        </div>
+
+        <!-- فيلم 3 -->
+        <div class="movie-card">
+            <img src="https://via.placeholder.com/250x350.png?text=Movie+3" alt="فيلم 3">
+            <h3>فيلم 3</h3>
+            <p>تقييم: 9/10</p>
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+        </div>
     </div>
 </body>
 </html>
