@@ -1,193 +1,66 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>موقع أفلام Zidan</title>
-  <style>
-    body {
-      font-family: "Cairo", sans-serif;
-      background-color: #0d1b2a;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background-color: #1b263b;
-      text-align: center;
-      padding: 20px;
-      font-size: 1.8em;
-      font-weight: bold;
-      color: #00aaff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    }
-
-    .container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 30px;
-    }
-
-    .movie {
-      background: #1e3a5f;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      transition: transform 0.3s;
-      padding-bottom: 15px;
-    }
-
-    .movie:hover {
-      transform: scale(1.03);
-    }
-
-    .thumbnail {
-      position: relative;
-      width: 100%;
-      height: 180px;
-      overflow: hidden;
-    }
-
-    .thumbnail img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .play-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 170, 255, 0.8);
-      border: none;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      font-size: 28px;
-      color: #fff;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .play-btn:hover {
-      background: #00ccff;
-    }
-
-    .video-frame {
-      display: none;
-      width: 100%;
-      height: 400px;
-      border: none;
-      margin-top: 10px;
-      border-radius: 10px;
-    }
-
-    .movie-title {
-      text-align: center;
-      padding: 10px;
-      font-size: 1.1em;
-      color: #00aaff;
-    }
-
-    .video-link {
-      display: block;
-      width: 90%;
-      margin: 10px auto;
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-      text-align: center;
-      background: #13294b;
-      color: #00ccff;
-      direction: ltr;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع عرض الأفلام</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0d3b66; /* لون أزرق */
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #144d78;
+            padding: 20px;
+            text-align: center;
+        }
+        .movie-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+        .movie-card {
+            background-color: #1e6091;
+            margin: 10px;
+            padding: 10px;
+            width: 250px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .movie-card img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .movie-card iframe {
+            width: 100%;
+            height: 150px;
+            border: none;
+            border-radius: 10px;
+        }
+        .movie-card h3 {
+            margin: 10px 0 5px;
+        }
+    </style>
 </head>
 <body>
-  <header>🎬 موقع أفلام Zidan</header>
+    <header>
+        <h1>موقع عرض الأفلام</h1>
+    </header>
 
-  <div class="container">
+    <div class="movie-container">
+        <!-- بداية الفيلم -->
+        <div class="movie-card">
+            <img src="link_to_movie_poster.jpg" alt="عنوان الفيلم">
+            <h3>عنوان الفيلم</h3>
+            <iframe src="<iframe src="https://www.xnxx.com/embedframe/utcouhf37d3" frameborder=0 width=510 height=400 scrolling=no allowfullscreen=allowfullscreen></iframe>" allowfullscreen></iframe>
+        </div>
+        <!-- نهاية الفيلم -->
 
-    <!-- ======= الفيلم 1 ======= -->
-    <div class="movie">
-      <div class="thumbnail">
-        <img src="https://via.placeholder.com/300x180.png?text=Film+1" alt="فيلم 1">
-        <button class="play-btn" onclick="playVideo(1)">▶</button>
-      </div>
-      <div class="movie-title">فيلم 1</div>
-      <input id="link1" class="video-link" placeholder="ضع رابط iframe هنا">
-      <iframe id="video1" class="video-frame" allowfullscreen></iframe>
+        <!-- لو عايز تضيف فيلم جديد، انسخ div ده وعدل الصور والفيديو والعنوان -->
     </div>
-
-    <!-- ======= الفيلم 2 ======= -->
-    <div class="movie">
-      <div class="thumbnail">
-        <img src="https://via.placeholder.com/300x180.png?text=Film+2" alt="فيلم 2">
-        <button class="play-btn" onclick="playVideo(2)">▶</button>
-      </div>
-      <div class="movie-title">فيلم 2</div>
-      <input id="link2" class="video-link" placeholder="ضع رابط iframe هنا">
-      <iframe id="video2" class="video-frame" allowfullscreen></iframe>
-    </div>
-
-    <!-- ======= الفيلم 3 ======= -->
-    <div class="movie">
-      <div class="thumbnail">
-        <img src="https://via.placeholder.com/300x180.png?text=Film+3" alt="فيلم 3">
-        <button class="play-btn" onclick="playVideo(3)">▶</button>
-      </div>
-      <div class="movie-title">فيلم 3</div>
-      <input id="link3" class="video-link" placeholder="ضع رابط iframe هنا">
-      <iframe id="video3" class="video-frame" allowfullscreen></iframe>
-    </div>
-
-    <!-- ======= الفيلم 4 ======= -->
-    <div class="movie">
-      <div class="thumbnail">
-        <img src="https://via.placeholder.com/300x180.png?text=Film+4" alt="فيلم 4">
-        <button class="play-btn" onclick="playVideo(4)">▶</button>
-      </div>
-      <div class="movie-title">فيلم 4</div>
-      <input id="link4" class="video-link" placeholder="ضع رابط iframe هنا">
-      <iframe id="video4" class="video-frame" allowfullscreen></iframe>
-    </div>
-
-    <!-- ======= الفيلم 5 ======= -->
-    <div class="movie">
-      <div class="thumbnail">
-        <img src="https://via.placeholder.com/300x180.png?text=Film+5" alt="فيلم 5">
-        <button class="play-btn" onclick="playVideo(5)">▶</button>
-      </div>
-      <div class="movie-title">فيلم 5</div>
-      <input id="link5" class="video-link" placeholder="ضع رابط iframe هنا">
-      <iframe id="video5" class="video-frame" allowfullscreen></iframe>
-    </div>
-
-  </div>
-
-  <script>
-    function playVideo(num) {
-      const linkInput = document.getElementById(`link${num}`);
-      const video = document.getElementById(`video${num}`);
-      const iframeCode = linkInput.value.trim();
-
-      if (!iframeCode) {
-        alert("من فضلك ضع رابط iframe أولاً 🎥");
-        return;
-      }
-
-      if (video.style.display === "none" || video.style.display === "") {
-        video.style.display = "block";
-        video.srcdoc = iframeCode;
-      } else {
-        video.style.display = "none";
-        video.srcdoc = "";
-      }
-    }
-  </script>
 </body>
 </html>
