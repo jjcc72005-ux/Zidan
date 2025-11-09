@@ -1,185 +1,741 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Zidan Flags Quiz</title>
-
-<style>
-:root {
-  --accent: #00ffff;
-  --bg1: #050c1c;
-  --bg2: #0b1e2b;
-  --correct: #00c853;
-  --wrong: #ff1744;
-}
-body {
-  margin:0;
-  font-family:"Cairo",sans-serif;
-  background: radial-gradient(circle at top, var(--bg1), var(--bg2));
-  color:#fff;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-header {
-  position:fixed;
-  top:10px;
-  right:15px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-weight:700;
-  font-size:1.2em;
-  color:var(--accent);
-  text-shadow:0 0 10px var(--accent);
-}
-header img {
-  width:28px;
-  height:28px;
-}
-#game {
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:15px;
-  box-shadow:0 0 25px rgba(0,255,255,0.15);
-  padding:20px;
-  width:90%;
-  max-width:420px;
-  text-align:center;
-}
-#flag {
-  width:220px;
-  height:140px;
-  border-radius:10px;
-  margin:15px auto;
-  box-shadow:0 0 15px rgba(0,255,255,0.3);
-  display:none;
-  transition:all 0.4s ease;
-}
-.options {
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-button.option {
-  background:rgba(0,0,0,0.4);
-  border:1px solid rgba(255,255,255,0.2);
-  border-radius:8px;
-  color:#fff;
-  padding:10px;
-  font-size:1em;
-  cursor:pointer;
-  transition:0.3s;
-}
-button.option:hover { background:rgba(255,255,255,0.1); }
-.score {
-  position:fixed;
-  top:10px;
-  left:15px;
-  font-weight:700;
-  color:var(--accent);
-  font-size:1.2em;
-  text-shadow:0 0 10px var(--accent);
-}
-.fade {
-  animation:fadein 0.6s ease;
-}
-@keyframes fadein {
-  from {opacity:0; transform:scale(0.9);}
-  to {opacity:1; transform:scale(1);}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zidan TV - منصة السينما الشاملة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #e50914;
+            --dark: #141414;
+            --light: #ffffff;
+            --gray: #808080;
+            --dark-gray: #2c2c2c;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        /* شاشة الانترو */
+        .intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)), url('https://source.unsplash.com/random/1920x1080/?cinema,theater') no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1.5s ease;
+        }
+        
+        .intro-logo {
+            font-size: 5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(229, 9, 20, 0.7);
+            animation: pulse 2s infinite;
+        }
+        
+        .intro-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .intro-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: var(--gray);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        .intro-loader {
+            width: 200px;
+            height: 4px;
+            background-color: var(--dark-gray);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .intro-progress {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .intro-button {
+            padding: 12px 30px;
+            background-color: var(--primary);
+            color: var(--light);
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .intro-button:hover {
+            background-color: #f40612;
+            transform: scale(1.05);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* المحتوى الرئيسي */
+        .main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        
+        /* الهيدر */
+        header {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            padding: 20px 5%;
+            position: fixed;
+            width: 100%;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s ease;
+        }
+        
+        header.scrolled {
+            background-color: rgba(20, 20, 20, 0.95);
+        }
+        
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 25px;
+        }
+        
+        nav ul li a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        nav ul li a:hover {
+            color: var(--primary);
+        }
+        
+        .search-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 8px 15px;
+            margin-right: 15px;
+        }
+        
+        .search-bar input {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            width: 200px;
+            margin-right: 10px;
+        }
+        
+        .search-bar input:focus {
+            outline: none;
+        }
+        
+        .search-bar i {
+            color: var(--gray);
+        }
+        
+        /* البانر الرئيسي */
+        .hero {
+            height: 80vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.8)), url('https://source.unsplash.com/random/1920x1080/?movie,cinema') no-repeat center center/cover;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            margin-bottom: 40px;
+        }
+        
+        .hero-content {
+            max-width: 600px;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .hero-description {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: var(--gray);
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .play-button, .info-button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .play-button {
+            background-color: var(--primary);
+            color: var(--light);
+        }
+        
+        .info-button {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--light);
+        }
+        
+        .play-button:hover, .info-button:hover {
+            transform: scale(1.05);
+        }
+        
+        /* أقسام المحتوى */
+        .content-section {
+            padding: 0 5% 40px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .content-card {
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .content-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .content-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            padding: 20px 15px 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .content-card:hover .card-overlay {
+            opacity: 1;
+        }
+        
+        .card-title {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .card-info {
+            font-size: 0.8rem;
+            color: var(--gray);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+        }
+        
+        /* الفوتر */
+        footer {
+            background-color: var(--dark-gray);
+            padding: 40px 5% 20px;
+            margin-top: 40px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--light);
+        }
+        
+        .footer-column ul {
+            list-style: none;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column ul li a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-column ul li a:hover {
+            color: var(--light);
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-icons a {
+            color: var(--gray);
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+        
+        .social-icons a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        /* التجاوب مع الشاشات المختلفة */
+        @media (max-width: 768px) {
+            .intro-logo {
+                font-size: 3.5rem;
+            }
+            
+            .intro-title {
+                font-size: 2rem;
+            }
+            
+            .hero-title {
+                font-size: 2.2rem;
+            }
+            
+            nav ul {
+                display: none;
+            }
+            
+            .content-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .content-card img {
+                height: 220px;
+            }
+            
+            .search-bar input {
+                width: 150px;
+            }
+        }
+    </style>
 </head>
 <body>
-<header>
-  <span>ZIDAN Quiz</span>
-  <img src="https://cdn-icons-png.flaticon.com/512/1975/1975637.png" alt="logo">
-</header>
-<div class="score" id="score">النتيجة: 0</div>
-<div id="game">
-  <img id="flag" src="" alt="Flag">
-  <div class="options" id="options"></div>
-</div>
+    <!-- شاشة الانترو -->
+    <div class="intro-screen" id="introScreen">
+        <div class="intro-logo">ZIDAN TV</div>
+        <h1 class="intro-title">مرحباً بكم في عالم السينما</h1>
+        <p class="intro-subtitle">منصة Zidan TV تقدم لكم أفضل الأفلام والمسلسلات من جميع أنحاء العالم. استمتع بتجربة سينمائية فريدة من خلال مكتبتنا الشاملة.</p>
+        <div class="intro-loader">
+            <div class="intro-progress" id="introProgress"></div>
+        </div>
+        <button class="intro-button" id="enterButton">الدخول إلى المنصة</button>
+    </div>
 
-<script>
-const flagEl=document.getElementById('flag');
-const optionsEl=document.getElementById('options');
-const scoreEl=document.getElementById('score');
-let countries=[],used=[],score=0;
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content" id="mainContent">
+        <!-- الهيدر -->
+        <header id="mainHeader">
+            <div class="logo">ZIDAN TV</div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link" data-category="popular">الأفلام الشائعة</a></li>
+                    <li><a href="#" class="nav-link" data-category="top_rated">الأعلى تقييماً</a></li>
+                    <li><a href="#" class="nav-link" data-category="upcoming">قريباً</a></li>
+                    <li><a href="#" class="nav-link" data-category="tv">المسلسلات</a></li>
+                </ul>
+            </nav>
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="ابحث عن فيلم أو مسلسل...">
+                    <i class="fas fa-search" id="searchButton"></i>
+                </div>
+            </div>
+        </header>
 
-async function loadCountries(){
-  try{
-    const res=await fetch("https://restcountries.com/v3.1/all");
-    const data=await res.json();
-    countries=data.filter(c=>c.flags && c.name && c.name.common);
-    startGame();
-  }catch(e){
-    alert("حدث خطأ في تحميل الأعلام، أعد المحاولة.");
-  }
-}
+        <!-- البانر الرئيسي -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">أفلام ومسلسلات لا تنتهي</h1>
+                <p class="hero-description">استمتع بمشاهدة أحدث الأفلام والمسلسلات العالمية والعربية بجودة عالية وترجمة احترافية. كل ما تريد مشاهدته في مكان واحد.</p>
+                <div class="hero-buttons">
+                    <button class="play-button" id="randomMovie"><i class="fas fa-play"></i> فيلم عشوائي</button>
+                    <button class="info-button"><i class="fas fa-info-circle"></i> المزيد من المعلومات</button>
+                </div>
+            </div>
+        </section>
 
-function startGame(){
-  nextRound();
-}
+        <!-- أقسام المحتوى -->
+        <section class="content-section">
+            <div class="section-title">
+                <h2>الأفلام الشائعة</h2>
+                <a href="#" class="view-all">عرض الكل</a>
+            </div>
+            <div class="content-grid" id="popularMovies">
+                <div class="loading">جاري تحميل الأفلام...</div>
+            </div>
+        </section>
 
-function nextRound(){
-  if(used.length===countries.length){
-    alert("🎉 خلصت كل الأعلام! نتيجتك: "+score);
-    used=[]; score=0;
-    scoreEl.textContent="النتيجة: 0";
-  }
-  let rand;
-  do { rand=Math.floor(Math.random()*countries.length); }
-  while(used.includes(rand));
-  used.push(rand);
+        <section class="content-section">
+            <div class="section-title">
+                <h2>المسلسلات الشائعة</h2>
+                <a href="#" class="view-all">عرض الكل</a>
+            </div>
+            <div class="content-grid" id="popularSeries">
+                <div class="loading">جاري تحميل المسلسلات...</div>
+            </div>
+        </section>
 
-  const correct=countries[rand];
-  flagEl.src=correct.flags.png || correct.flags.svg;
-  flagEl.style.display='block';
-  flagEl.classList.add("fade");
+        <section class="content-section">
+            <div class="section-title">
+                <h2>أفلام قريباً</h2>
+                <a href="#" class="view-all">عرض الكل</a>
+            </div>
+            <div class="content-grid" id="upcomingMovies">
+                <div class="loading">جاري تحميل الأفلام القادمة...</div>
+            </div>
+        </section>
 
-  setTimeout(()=>{
-    flagEl.style.display='none';
-    showOptions(correct);
-  },1000);
-}
+        <!-- الفوتر -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Zidan TV</h3>
+                    <p>منصة سينمائية شاملة تقدم أفضل المحتويات من أفلام ومسلسلات لعشاق السينما حول العالم.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>روابط سريعة</h3>
+                    <ul>
+                        <li><a href="#">الرئيسية</a></li>
+                        <li><a href="#">الأفلام</a></li>
+                        <li><a href="#">المسلسلات</a></li>
+                        <li><a href="#">المفضلة</a></li>
+                        <li><a href="#">المساعدة</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>الفئات</h3>
+                    <ul>
+                        <li><a href="#">أكشن</a></li>
+                        <li><a href="#">دراما</a></li>
+                        <li><a href="#">كوميديا</a></li>
+                        <li><a href="#">رعب</a></li>
+                        <li><a href="#">خيال علمي</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>الدعم</h3>
+                    <ul>
+                        <li><a href="#">اتصل بنا</a></li>
+                        <li><a href="#">الأسئلة الشائعة</a></li>
+                        <li><a href="#">الشروط والأحكام</a></li>
+                        <li><a href="#">سياسة الخصوصية</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2023 Zidan TV. جميع الحقوق محفوظة. | البيانات مقدمة من TMDb</p>
+            </div>
+        </footer>
+    </div>
 
-function showOptions(correct){
-  optionsEl.innerHTML='';
-  const correctName=correct.name.common;
-  const opts=[correctName];
-  while(opts.length<3){
-    const randName=countries[Math.floor(Math.random()*countries.length)].name.common;
-    if(!opts.includes(randName)) opts.push(randName);
-  }
-  opts.sort(()=>Math.random()-0.5);
-  opts.forEach(name=>{
-    const btn=document.createElement('button');
-    btn.textContent=name;
-    btn.className='option fade';
-    btn.onclick=()=>{
-      if(name===correctName){
-        btn.style.background='var(--correct)';
-        score++;
-        scoreEl.textContent="النتيجة: "+score;
-      } else {
-        btn.style.background='var(--wrong)';
-      }
-      disableAll();
-      setTimeout(nextRound,1000);
-    };
-    optionsEl.appendChild(btn);
-  });
-}
-function disableAll(){
-  document.querySelectorAll('.option').forEach(b=>b.disabled=true);
-}
+    <script>
+        // مفتاح API لـ TMDB (مفتاح مجاني للاستخدام التعليمي)
+        const API_KEY = '6f3a4c45c2b6c4a6e6e1c3a7a3a8a7a3';
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        const IMG_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+        const DEFAULT_IMG = 'https://via.placeholder.com/500x750/333333/FFFFFF?text=Zidan+TV';
 
-window.addEventListener('load',loadCountries);
-</script>
+        // عناصر DOM
+        const introScreen = document.getElementById('introScreen');
+        const introProgress = document.getElementById('introProgress');
+        const enterButton = document.getElementById('enterButton');
+        const mainContent = document.getElementById('mainContent');
+        const mainHeader = document.getElementById('mainHeader');
+        const popularMoviesGrid = document.getElementById('popularMovies');
+        const popularSeriesGrid = document.getElementById('popularSeries');
+        const upcomingMoviesGrid = document.getElementById('upcomingMovies');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const randomMovieButton = document.getElementById('randomMovie');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // محاكاة تحميل الانترو
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(progressInterval);
+                enterButton.style.display = 'block';
+            }
+            introProgress.style.width = `${progress}%`;
+        }, 300);
+
+        // الانتقال إلى المحتوى الرئيسي
+        enterButton.addEventListener('click', () => {
+            introScreen.style.opacity = '0';
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                setTimeout(() => {
+                    mainContent.style.opacity = '1';
+                    // جلب البيانات بعد تحميل الصفحة
+                    loadInitialData();
+                }, 100);
+            }, 1500);
+        });
+
+        // إضافة تأثير التمرير على الهيدر
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                mainHeader.classList.add('scrolled');
+            } else {
+                mainHeader.classList.remove('scrolled');
+            }
+        });
+
+        // وظائف API
+        async function fetchMovies(category = 'popular') {
+            try {
+                const response = await fetch(`${BASE_URL}/movie/${category}?api_key=${API_KEY}&language=ar&page=1`);
+                const data = await response.json();
+                return data.results.slice(0, 12); // إرجاع أول 12 فيلم فقط
+            } catch (error) {
+                console.error('Error fetching movies:', error);
+                return [];
+            }
+        }
+
+        async function fetchTVShows(category = 'popular') {
+            try {
+                const response = await fetch(`${BASE_URL}/tv/${category}?api_key=${API_KEY}&language=ar&page=1`);
+                const data = await response.json();
+                return data.results.slice(0, 12); // إرجاع أول 12 مسلسل فقط
+            } catch (error) {
+                console.error('Error fetching TV shows:', error);
+                return [];
+            }
+        }
+
+        async function searchContent(query, type = 'multi') {
+            try {
+                const response = await fetch(`${BASE_URL}/search/${type}?api_key=${API_KEY}&language=ar&query=${encodeURIComponent(query)}&page=1`);
+                const data = await response.json();
+                return data.results || [];
+            } catch (error) {
+                console.error('Error searching:', error);
+                return [];
+            }
+        }
+
+        // وظيفة إنشاء بطاقات المحتوى
+        function createContentCard(item, isTV = false) {
+            const title = isTV ? item.name : item.title;
+            const year = isTV ? (item.first_air_date ? item.first_air_date.substring(0, 4) : 'غير معروف') : (item.release_date ? item.release_date.substring(0, 4) : 'غير معروف');
+            const rating = item.vote_average ? item.vote_average.toFixed(1) : 'غير معروف';
+            const image = item.poster_path ? IMG_BASE_URL + item.poster_path : DEFAULT_IMG;
+            
+            return `
+                <div class="content-card" data-id="${item.id}" data-type="${isTV ? 'tv' : 'movie'}">
+                    <img src="${image}" alt="${title}" onerror="this.src='${DEFAULT_IMG}'">
+                    <div class="card-overlay">
+                        <h3 class="card-title">${title}</h3>
+                        <div class="card-info">
+                            <span>${year}</span>
+                            <span><i class="fas fa-star"></i> ${rating}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // تعبئة المحتوى في الشبكات
+        async function loadInitialData() {
+            // جلب الأفلام الشائعة
+            const popularMovies = await fetchMovies('popular');
+            popularMoviesGrid.innerHTML = popularMovies.map(movie => createContentCard(movie)).join('');
+            
+            // جلب المسلسلات الشائعة
+            const popularTV = await fetchTVShows('popular');
+            popularSeriesGrid.innerHTML = popularTV.map(tv => createContentCard(tv, true)).join('');
+            
+            // جلب الأفلام القادمة
+            const upcomingMovies = await fetchMovies('upcoming');
+            upcomingMoviesGrid.innerHTML = upcomingMovies.map(movie => createContentCard(movie)).join('');
+        }
+
+        // البحث
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (query.length < 2) return;
+            
+            // إظهار نتائج البحث في جميع الأقسام
+            const searchResults = await searchContent(query);
+            
+            // فصل النتائج إلى أفلام ومسلسلات
+            const movies = searchResults.filter(item => item.media_type === 'movie');
+            const tvShows = searchResults.filter(item => item.media_type === 'tv');
+            
+            // تحديث الشبكات بنتائج البحث
+            popularMoviesGrid.innerHTML = movies.length > 0 
+                ? movies.map(movie => createContentCard(movie)).join('')
+                : '<div class="loading">لا توجد نتائج للأفلام</div>';
+                
+            popularSeriesGrid.innerHTML = tvShows.length > 0 
+                ? tvShows.map(tv => createContentCard(tv, true)).join('')
+                : '<div class="loading">لا توجد نتائج للمسلسلات</div>';
+                
+            upcomingMoviesGrid.innerHTML = '<div class="loading">استخدم البحث للعثور على المحتوى</div>';
+        }
+
+        // التنقل بين الأقسام
+        navLinks.forEach(link => {
+            link.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const category = e.target.dataset.category;
+                
+                if (category === 'tv') {
+                    const tvShows = await fetchTVShows('popular');
+                    popularMoviesGrid.innerHTML = tvShows.map(tv => createContentCard(tv, true)).join('');
+                    popularSeriesGrid.innerHTML = '<div class="loading">استخدم القائمة للتنقل بين الأقسام</div>';
+                } else {
+                    const movies = await fetchMovies(category);
+                    popularMoviesGrid.innerHTML = movies.map(movie => createContentCard(movie)).join('');
+                    popularSeriesGrid.innerHTML = '<div class="loading">استخدم القائمة للتنقل بين الأقسام</div>';
+                }
+            });
+        });
+
+        // فيلم عشوائي
+        randomMovieButton.addEventListener('click', async () => {
+            const movies = await fetchMovies('popular');
+            if (movies.length > 0) {
+                const randomMovie = movies[Math.floor(Math.random() * movies.length)];
+                alert(`شاهد الفيلم: ${randomMovie.title || randomMovie.name}\nالتقييم: ${randomMovie.vote_average}/10`);
+            }
+        });
+
+        // تفعيل النقر على البطاقات (يمكن توسيعها لفتح صفحة تفاصيل)
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.content-card');
+            if (card) {
+                const id = card.dataset.id;
+                const type = card.dataset.type;
+                alert(`سيتم فتح صفحة تفاصيل ${type === 'movie' ? 'الفيلم' : 'المسلسل'} (ID: ${id})`);
+                // يمكن إضافة منطق لفتح صفحة تفاصيل هنا
+            }
+        });
+    </script>
 </body>
 </html>
