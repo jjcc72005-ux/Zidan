@@ -36,6 +36,7 @@
       overflow: hidden;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
       transition: transform 0.3s;
+      padding-bottom: 15px;
     }
 
     .movie:hover {
@@ -90,6 +91,20 @@
       font-size: 1.1em;
       color: #00aaff;
     }
+
+    .video-link {
+      display: block;
+      width: 90%;
+      margin: 10px auto;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      text-align: center;
+      background: #13294b;
+      color: #00ccff;
+      direction: ltr;
+    }
   </style>
 </head>
 <body>
@@ -104,7 +119,8 @@
         <button class="play-btn" onclick="playVideo(1)">▶</button>
       </div>
       <div class="movie-title">فيلم 1</div>
-      <iframe id="video1" class="video-frame" src="" allowfullscreen></iframe>
+      <input id="link1" class="video-link" placeholder="ضع رابط الفيديو هنا">
+      <iframe id="video1" class="video-frame" allowfullscreen></iframe>
     </div>
 
     <!-- ======= الفيلم 2 ======= -->
@@ -114,7 +130,8 @@
         <button class="play-btn" onclick="playVideo(2)">▶</button>
       </div>
       <div class="movie-title">فيلم 2</div>
-      <iframe id="video2" class="video-frame" src="" allowfullscreen></iframe>
+      <input id="link2" class="video-link" placeholder="ضع رابط الفيديو هنا">
+      <iframe id="video2" class="video-frame" allowfullscreen></iframe>
     </div>
 
     <!-- ======= الفيلم 3 ======= -->
@@ -124,7 +141,8 @@
         <button class="play-btn" onclick="playVideo(3)">▶</button>
       </div>
       <div class="movie-title">فيلم 3</div>
-      <iframe id="video3" class="video-frame" src="" allowfullscreen></iframe>
+      <input id="link3" class="video-link" placeholder="ضع رابط الفيديو هنا">
+      <iframe id="video3" class="video-frame" allowfullscreen></iframe>
     </div>
 
     <!-- ======= الفيلم 4 ======= -->
@@ -134,7 +152,8 @@
         <button class="play-btn" onclick="playVideo(4)">▶</button>
       </div>
       <div class="movie-title">فيلم 4</div>
-      <iframe id="video4" class="video-frame" src="" allowfullscreen></iframe>
+      <input id="link4" class="video-link" placeholder="https://via.placeholder.com/300x180.png?text=Film+1">
+      <iframe id="video4" class="video-frame" allowfullscreen></iframe>
     </div>
 
     <!-- ======= الفيلم 5 ======= -->
@@ -144,24 +163,25 @@
         <button class="play-btn" onclick="playVideo(5)">▶</button>
       </div>
       <div class="movie-title">فيلم 5</div>
-      <iframe id="video5" class="video-frame" src="" allowfullscreen></iframe>
+      <input id="link5" class="video-link" placeholder="ضع رابط الفيديو هنا">
+      <iframe id="video5" class="video-frame" allowfullscreen></iframe>
     </div>
 
   </div>
 
   <script>
     function playVideo(num) {
+      const linkInput = document.getElementById(`link${num}`);
       const video = document.getElementById(`video${num}`);
-      const link = [
-        "https://via.placeholder.com/300x180.png?text=Film+5",
-        "<iframe src="https://www.xnxx.com/embedframe/kovtuah75d9" frameborder=0 width=510 height=400 scrolling=no allowfullscreen=allowfullscreen></iframe>",
-        "https://www.youtube.com/embed/VIDEO_ID_3",
-        "https://www.youtube.com/embed/VIDEO_ID_4",
-        "https://www.youtube.com/embed/VIDEO_ID_5",
-      ];
+      const videoUrl = linkInput.value.trim();
+
+      if (!videoUrl) {
+        alert("من فضلك ضع رابط الفيديو أولاً 🎥");
+        return;
+      }
 
       if (video.style.display === "none" || video.style.display === "") {
-        video.src = link[num - 1];
+        video.src = videoUrl;
         video.style.display = "block";
       } else {
         video.style.display = "none";
