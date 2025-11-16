@@ -1,0 +1,28 @@
+{
+  "name": "html-to-apk-converter",
+  "version": "1.0.0",
+  "description": "أداة لتحويل HTML إلى تطبيقات APK - مشروع كامل يعمل على GitHub",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "keywords": [
+    "html",
+    "apk",
+    "converter",
+    "android",
+    "github",
+    "webview"
+  ],
+  "author": "مطور عربي",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/html-to-apk-converter"
+  }
+}
