@@ -319,6 +319,16 @@
             100% { transform: rotate(360deg); }
         }
         
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            display: none;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -416,6 +426,10 @@
                     </div>
                 </div>
                 
+                <div class="success-message" id="successMessage">
+                    ✓ تم إنشاء التطبيق بنجاح! يمكنك الآن تحميل ملفات التطبيق.
+                </div>
+                
                 <div class="loading" id="loadingIndicator">
                     <div class="loading-spinner"></div>
                     <p>جاري إنشاء ملفات التطبيق...</p>
@@ -485,6 +499,7 @@
             const splashDuration = document.getElementById('splashDuration');
             const downloadBtn = document.getElementById('downloadBtn');
             const loadingIndicator = document.getElementById('loadingIndicator');
+            const successMessage = document.getElementById('successMessage');
             
             const appNamePreview = document.getElementById('appNamePreview');
             const appHeaderPreview = document.getElementById('appHeaderPreview');
@@ -534,12 +549,21 @@
                 }
             });
             
-            // معالجة تقديم النموذج
+            // معالجة تقديم النموذج - تم التصحيح هنا
             form.addEventListener('submit', function(e) {
-                e.preventDefault();
+                e.preventDefault(); // هذا يمنع إعادة تحميل الصفحة
+                
+                // التحقق من الحقول المطلوبة
+                if (!websiteUrl.value || !appName.value || !appVersion.value) {
+                    alert('يرجى ملء جميع الحقول المطلوبة');
+                    return;
+                }
                 
                 // تفعيل زر التحميل
                 downloadBtn.disabled = false;
+                
+                // إظهار رسالة النجاح
+                successMessage.style.display = 'block';
                 
                 // عرض شاشة التمهيد في المعاينة
                 splashPreview.classList.remove('hidden');
@@ -548,14 +572,17 @@
                 setTimeout(function() {
                     splashPreview.classList.add('hidden');
                 }, splashDuration.value * 1000);
-                
-                // عرض رسالة نجاح
-                alert('تم إنشاء التطبيق بنجاح! يمكنك الآن تحميل ملفات التطبيق.');
             });
             
             // معالجة زر التحميل
             downloadBtn.addEventListener('click', async function() {
                 if (this.disabled) return;
+                
+                // التحقق من الحقول المطلوبة مرة أخرى
+                if (!websiteUrl.value || !appName.value || !appVersion.value) {
+                    alert('يرجى ملء جميع الحقول المطلوبة أولاً');
+                    return;
+                }
                 
                 // إظهار مؤشر التحميل
                 loadingIndicator.style.display = 'block';
@@ -594,8 +621,7 @@
                     appFolder.file("manifest.json", JSON.stringify(manifest, null, 2));
                     
                     // إنشاء service worker
-                    const serviceWorker = `
-// Service Worker للتطبيق
+                    const serviceWorker = `// Service Worker للتطبيق
 const CACHE_NAME = '${appName.value.replace(/\s+/g, '-').toLowerCase()}-v${appVersion.value}';
 const urlsToCache = [
   './',
@@ -623,14 +649,12 @@ self.addEventListener('fetch', function(event) {
       }
     )
   );
-});
-                    `;
+});`;
                     
                     appFolder.file("sw.js", serviceWorker);
                     
                     // إنشاء ملف index.html الرئيسي
-                    const indexHtml = `
-<!DOCTYPE html>
+                    const indexHtml = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -692,35 +716,14 @@ self.addEventListener('fetch', function(event) {
         setTimeout(function() {
             window.location.href = '${websiteUrl.value}';
         }, 2000);
-        
-        // إظهار نصب التثبيت إذا كان المتصفح يدعمه
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            const installButton = document.createElement('button');
-            installButton.textContent = 'تثبيت التطبيق';
-            installButton.style.cssText = \`
-                background: white;
-                color: #4a6fa5;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
-                margin-top: 20px;
-                cursor: pointer;
-                font-weight: bold;
-            \`;
-            installButton.onclick = () => e.prompt();
-            document.querySelector('.container').appendChild(installButton);
-        });
     </script>
 </body>
-</html>
-                    `;
+</html>`;
                     
                     appFolder.file("index.html", indexHtml);
                     
                     // إنشاء ملف README مع التعليمات
-                    const readme = `
-# تطبيق ${appName.value}
+                    const readme = `# تطبيق ${appName.value}
 
 هذا التطبيق تم إنشاؤه باستخدام أداة تحويل المواقع إلى تطبيقات.
 
@@ -741,8 +744,7 @@ self.addEventListener('fetch', function(event) {
 
 - الإصدار: ${appVersion.value}
 - الرابط المستهدف: ${websiteUrl.value}
-- تم الإنشاء في: ${new Date().toLocaleDateString('ar-EG')}
-                    `;
+- تم الإنشاء في: ${new Date().toLocaleDateString('ar-EG')}`;
                     
                     appFolder.file("README.txt", readme);
                     
@@ -750,14 +752,10 @@ self.addEventListener('fetch', function(event) {
                     const content = await zip.generateAsync({type: "blob"});
                     saveAs(content, `${appName.value.replace(/\s+/g, '-')}-pwa.zip`);
                     
-                    // إعادة تعيين الزر وإخفاء المؤشر
-                    this.disabled = false;
-                    loadingIndicator.style.display = 'none';
-                    
                 } catch (error) {
                     console.error('Error generating ZIP:', error);
                     alert('حدث خطأ أثناء إنشاء الملفات. يرجى المحاولة مرة أخرى.');
-                    
+                } finally {
                     // إعادة تعيين الزر وإخفاء المؤشر
                     this.disabled = false;
                     loadingIndicator.style.display = 'none';
