@@ -3,78 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محول HTML إلى APK - باستخدام خدمات حقيقية</title>
+    <title>تحويل الموقع إلى تطبيق</title>
     <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cbc;
+            --accent-color: #ff6b6b;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+        }
+        
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --accent: #4cb5ae;
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-        }
-        
         body {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #333;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
             line-height: 1.6;
-            min-height: 100vh;
-            padding: 20px;
         }
         
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
+            padding: 20px;
         }
         
         header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid var(--accent);
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         header h1 {
-            color: var(--primary);
             font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
         }
         
-        .solution-notice {
-            background: #d4edda;
-            border: 2px solid var(--success);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: center;
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
         
-        .solution-notice h3 {
-            color: var(--success);
-            margin-bottom: 10px;
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 30px;
         }
         
-        .converter-box {
-            background: #f8f9fa;
-            border-radius: 15px;
+        .form-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
             padding: 25px;
-            margin-bottom: 20px;
-            border: 2px dashed var(--accent);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .preview-section {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .form-group {
@@ -85,459 +88,469 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--dark-color);
         }
         
-        input, textarea, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
         }
         
-        textarea {
-            min-height: 250px;
-            resize: vertical;
-            font-family: 'Courier New', monospace;
-            line-height: 1.5;
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-button {
+            display: block;
+            padding: 12px 15px;
+            background: var(--light-color);
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            text-align: center;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-input-button:hover {
+            background: #e9ecef;
+            border-color: var(--primary-color);
         }
         
         .btn {
-            background: linear-gradient(135deg, var(--accent), #3a9d96);
+            display: inline-block;
+            background: var(--primary-color);
             color: white;
+            padding: 12px 25px;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 18px;
+            border-radius: 8px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-decoration: none;
-            margin: 5px;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
         }
         
         .btn:hover {
+            background: var(--secondary-color);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 181, 174, 0.4);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
         .btn-success {
-            background: linear-gradient(135deg, var(--success), #218838);
+            background: var(--success-color);
         }
         
-        .btn-warning {
-            background: linear-gradient(135deg, var(--warning), #e0a800);
+        .btn-success:hover {
+            background: #218838;
         }
         
-        .service-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+        .preview-container {
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
-        .service-card {
+        .phone-mockup {
+            background: #222;
+            border-radius: 25px;
+            padding: 10px;
+            position: relative;
+        }
+        
+        .phone-screen {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid var(--accent);
+            border-radius: 15px;
+            height: 500px;
+            overflow: hidden;
+            position: relative;
         }
         
-        .service-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
+        .app-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            transition: opacity 1s;
+        }
+        
+        .splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .app-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .app-icon img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
         }
         
         .instructions {
-            background: rgba(255, 243, 205, 0.9);
-            border: 2px solid var(--warning);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: right;
-            line-height: 1.8;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 30px;
         }
         
-        .code-example {
-            background: #2c3e50;
+        .instructions h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            background: var(--primary-color);
             color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            overflow-x: auto;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
         }
         
         footer {
             text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
+            margin-top: 40px;
+            padding: 20px;
             color: #666;
+            border-top: 1px solid #eee;
         }
         
-        .tab-container {
-            margin: 20px 0;
-        }
-        
-        .tabs {
-            display: flex;
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .tab.active {
-            background: var(--accent);
-            color: white;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🚀 الحل النهائي - محول HTML إلى APK حقيقي</h1>
-            <p>استخدم خدمات موثوقة لإنشاء APK يعمل بدون أخطاء</p>
-        </header>
-        
-        <div class="solution-notice">
-            <h3>✅ تم حل مشكلة "There was a problem parsing the package"</h3>
-            <p>الآن تستخدم خدمات حقيقية لإنشاء APK صالح للتثبيت</p>
+    <header>
+        <div class="container">
+            <h1>تحويل موقعك إلى تطبيق</h1>
+            <p>قم بتحويل موقعك الإلكتروني إلى تطبيق جوال مع إمكانية تخصيص الاسم، الأيقونة، والإصدار</p>
         </div>
-        
-        <div class="converter-box">
-            <div class="tab-container">
-                <div class="tabs">
-                    <div class="tab active" onclick="switchTab('htmlTab')">📄 كود HTML</div>
-                    <div class="tab" onclick="switchTab('urlTab')">🌐 رابط موقع</div>
-                    <div class="tab" onclick="switchTab('pwaTab')">📱 PWA جاهز</div>
-                </div>
-                
-                <div id="htmlTab" class="tab-content active">
+    </header>
+    
+    <div class="container">
+        <div class="main-content">
+            <section class="form-section">
+                <h2>إعدادات التطبيق</h2>
+                <form id="appConfigForm">
                     <div class="form-group">
-                        <label for="appName">اسم التطبيق:</label>
-                        <input type="text" id="appName" value="تطبيقي الرائع" required>
+                        <label for="websiteUrl">رابط الموقع</label>
+                        <input type="url" id="websiteUrl" placeholder="https://example.com" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="htmlCode">كود HTML:</label>
-                        <textarea id="htmlCode" required><!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تطبيقي الرائع</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        .header {
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            margin-bottom: 30px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-        .btn {
-            background: #4cb5ae;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 18px;
-            cursor: pointer;
-            margin: 10px;
-            transition: transform 0.3s ease;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>مرحبا بالعالم! 🌍</h1>
-            <p>تم إنشاء هذا التطبيق باستخدام محول HTML إلى APK</p>
+                        <label for="appName">اسم التطبيق</label>
+                        <input type="text" id="appName" placeholder="اسم تطبيقي" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="appVersion">إصدار التطبيق</label>
+                        <input type="text" id="appVersion" placeholder="1.0.0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="appIcon">أيقونة التطبيق</label>
+                        <div class="file-input-wrapper">
+                            <div class="file-input-button" id="iconButton">
+                                اختر صورة الأيقونة
+                            </div>
+                            <input type="file" id="appIcon" accept="image/*">
+                        </div>
+                        <small>الحجم الموصى به: 512x512 بكسل</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="splashImage">صورة شاشة التمهيد (اختياري)</label>
+                        <div class="file-input-wrapper">
+                            <div class="file-input-button" id="splashButton">
+                                اختر صورة شاشة التمهيد
+                            </div>
+                            <input type="file" id="splashImage" accept="image/*">
+                        </div>
+                        <small>الحجم الموصى به: 1200x1200 بكسل</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="splashText">نص شاشة التمهيد (اختياري)</label>
+                        <textarea id="splashText" rows="3" placeholder="مرحباً بك في تطبيقي"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="splashDuration">مدة عرض شاشة التمهيد (بالثواني)</label>
+                        <input type="number" id="splashDuration" min="1" max="10" value="3">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">إنشاء التطبيق</button>
+                </form>
+            </section>
+            
+            <section class="preview-section">
+                <h2>معاينة التطبيق</h2>
+                <div class="preview-container">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="splash-screen" id="splashPreview">
+                                <div class="app-icon" id="iconPreview">
+                                    <span>App</span>
+                                </div>
+                                <h3 id="appNamePreview">اسم التطبيق</h3>
+                                <p id="splashTextPreview">مرحباً بك في تطبيقنا</p>
+                            </div>
+                            <div class="app-header" id="appHeaderPreview">
+                                اسم التطبيق
+                            </div>
+                            <div style="padding: 15px;">
+                                <p>سيتم تحميل موقعك هنا بعد إنشاء التطبيق</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="width: 100%; margin-top: 20px;">
+                    <button class="btn" id="downloadBtn" disabled>تحميل ملفات التطبيق</button>
+                    <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
+                        بعد تعبئة النموذج، سيتم تفعيل زر التحميل
+                    </p>
+                </div>
+            </section>
         </div>
-        <button class="btn" onclick="showMessage()">انقر هنا</button>
-        <button class="btn" onclick="changeColor()">تغيير الخلفية</button>
-    </div>
-
-    <script>
-        function showMessage() {
-            alert('أهلاً وسهلاً! 👋 تطبيقك يعمل بشكل ممتاز!');
-        }
         
-        function changeColor() {
-            const colors = [
-                'linear-gradient(135deg, #667eea, #764ba2)',
-                'linear-gradient(135deg, #f093fb, #f5576c)',
-                'linear-gradient(135deg, #4facfe, #00f2fe)'
-            ];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            document.body.style.background = randomColor;
-        }
-    </script>
-</body>
-</html></textarea>
-                    </div>
-                </div>
-                
-                <div id="urlTab" class="tab-content">
-                    <div class="form-group">
-                        <label for="websiteUrl">رابط الموقع:</label>
-                        <input type="url" id="websiteUrl" placeholder="https://example.com" value="https://www.google.com">
-                    </div>
-                </div>
-                
-                <div id="pwaTab" class="tab-content">
-                    <div class="form-group">
-                        <label for="pwaUrl">رابط PWA:</label>
-                        <input type="url" id="pwaUrl" placeholder="https://your-pwa.com" value="https://webboard-game.vercel.app">
-                    </div>
+        <section class="instructions">
+            <h2>كيفية تحويل موقعك إلى تطبيق</h2>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>أدخل رابط موقعك</h3>
+                    <p>أدخل الرابط الكامل لموقعك الإلكتروني الذي تريد تحويله إلى تطبيق</p>
                 </div>
             </div>
             
-            <h3 style="text-align: center; margin: 20px 0; color: var(--primary);">
-                اختر إحدى الخدمات الموثوقة لإنشاء APK:
-            </h3>
-            
-            <div class="service-buttons">
-                <div class="service-card">
-                    <div class="service-icon">🔗</div>
-                    <h4>PWA Builder</h4>
-                    <p>خدمة مجانية من مايكروسوفت</p>
-                    <button class="btn btn-success" onclick="usePwaBuilder()">
-                        استخدام هذه الخدمة
-                    </button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">⚡</div>
-                    <h4>WebView Generator</h4>
-                    <p>تحويل المواقع إلى تطبيقات</p>
-                    <button class="btn btn-success" onclick="useWebViewGenerator()">
-                        استخدام هذه الخدمة
-                    </button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">🎯</div>
-                    <h4>App Creator 24</h4>
-                    <p>أداة متخصصة لإنشاء التطبيقات</p>
-                    <button class="btn btn-success" onclick="useAppCreator24()">
-                        استخدام هذه الخدمة
-                    </button>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>قم بتخصيص التطبيق</h3>
+                    <p>اختر اسم التطبيق، الإصدار، أيقونة التطبيق، وشاشة التمهيد حسب رغبتك</p>
                 </div>
             </div>
-        </div>
-        
-        <div class="instructions">
-            <h4>🎯 لماذا تظهر مشكلة "There was a problem parsing the package"؟</h4>
-            <p>1. الملف ليس APK حقيقي بل مجرد ملف نصي</p>
-            <p>2. توقيع التطبيق غير صالح</p>
-            <p>3. هيكل APK غير مكتمل</p>
-            <p>4. الإصدار غير متوافق مع جهازك</p>
             
-            <h4 style="margin-top: 15px;">✅ الحل باستخدام الخدمات أعلاه:</h4>
-            <p>• تستخدم منصات موثوقة لبناء APK</p>
-            <p>• توقيع صالح وتوقيع Google Play</p>
-            <p>• هيكل APK كامل وصحيح</p>
-            <p>• متوافق مع جميع إصدارات الأندرويد</p>
-        </div>
-        
-        <div class="code-example">
-            // 📱 كود مثال لإنشاء تطبيق أندرويد حقيقي<br>
-            // باستخدام Cordova (للمطورين)<br>
-            <br>
-            $ npm install -g cordova<br>
-            $ cordova create MyApp com.mycompany.myapp MyApp<br>
-            $ cd MyApp<br>
-            $ cordova platform add android<br>
-            $ cordova build android<br>
-            $ cordova run android
-        </div>
-        
-        <footer>
-            <p>💡 نصيحة: استخدم الخدمات الموثوقة أعلاه لضمان عمل APK بشكل صحيح</p>
-            <p>© 2024 الحل النهائي لمشكلة تحليل الحزمة - جميع الحقوق محفوظة</p>
-        </footer>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>أنشئ التطبيق</h3>
+                    <p>انقر على زر "إنشاء التطبيق" لمعاينة النتيجة وتوليد ملفات التطبيق</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>قم بتحميل الملفات</h3>
+                    <p>بعد إنشاء التطبيق، قم بتحميل ملفات التطبيق ورفعها إلى خادم موقعك</p>
+                </div>
+            </div>
+        </section>
     </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2023 - جميع الحقوق محفوظة | أداة تحويل المواقع إلى تطبيقات</p>
+        </div>
+    </footer>
 
     <script>
-        function switchTab(tabName) {
-            // إخفاء جميع المحتويات
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('appConfigForm');
+            const websiteUrl = document.getElementById('websiteUrl');
+            const appName = document.getElementById('appName');
+            const appVersion = document.getElementById('appVersion');
+            const appIcon = document.getElementById('appIcon');
+            const splashImage = document.getElementById('splashImage');
+            const splashText = document.getElementById('splashText');
+            const splashDuration = document.getElementById('splashDuration');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            const appNamePreview = document.getElementById('appNamePreview');
+            const appHeaderPreview = document.getElementById('appHeaderPreview');
+            const splashPreview = document.getElementById('splashPreview');
+            const iconPreview = document.getElementById('iconPreview');
+            const splashTextPreview = document.getElementById('splashTextPreview');
+            
+            const iconButton = document.getElementById('iconButton');
+            const splashButton = document.getElementById('splashButton');
+            
+            // تحديث المعاينة عند تغيير المدخلات
+            appName.addEventListener('input', function() {
+                appNamePreview.textContent = this.value || 'اسم التطبيق';
+                appHeaderPreview.textContent = this.value || 'اسم التطبيق';
             });
             
-            // إلغاء تنشيط جميع الألسنة
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
+            splashText.addEventListener('input', function() {
+                splashTextPreview.textContent = this.value || 'مرحباً بك في تطبيقنا';
             });
             
-            // إظهار المحتوى المطلوب
-            document.getElementById(tabName).classList.add('active');
-            
-            // تنشيط اللسان المطلوب
-            event.target.classList.add('active');
-        }
-        
-        function usePwaBuilder() {
-            const appName = document.getElementById('appName').value;
-            const activeTab = document.querySelector('.tab-content.active').id;
-            let content = '';
-            
-            if (activeTab === 'htmlTab') {
-                content = encodeURIComponent(document.getElementById('htmlCode').value);
-                window.open(`https://www.pwabuilder.com/?url=data:text/html,${content}`, '_blank');
-            } else if (activeTab === 'urlTab') {
-                const url = document.getElementById('websiteUrl').value;
-                window.open(`https://www.pwabuilder.com/?url=${encodeURIComponent(url)}`, '_blank');
-            } else {
-                const pwaUrl = document.getElementById('pwaUrl').value;
-                window.open(`https://www.pwabuilder.com/?url=${encodeURIComponent(pwaUrl)}`, '_blank');
-            }
-            
-            showInstructions('PWA Builder');
-        }
-        
-        function useWebViewGenerator() {
-            const appName = document.getElementById('appName').value;
-            const activeTab = document.querySelector('.tab-content.active').id;
-            
-            if (activeTab === 'urlTab') {
-                const url = document.getElementById('websiteUrl').value;
-                // استخدام خدمة WebView مجانية
-                window.open(`https://appcreator24.com/webview?url=${encodeURIComponent(url)}&name=${encodeURIComponent(appName)}`, '_blank');
-            } else {
-                // في حالة HTML، نحول لـ URL أولاً
-                const htmlContent = document.getElementById('htmlCode').value;
-                const blob = new Blob([htmlContent], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                window.open(`https://appcreator24.com/webview?url=${encodeURIComponent(url)}&name=${encodeURIComponent(appName)}`, '_blank');
-            }
-            
-            showInstructions('WebView Generator');
-        }
-        
-        function useAppCreator24() {
-            const appName = document.getElementById('appName').value;
-            const activeTab = document.querySelector('.tab-content.active').id;
-            
-            let url = '';
-            if (activeTab === 'urlTab') {
-                url = document.getElementById('websiteUrl').value;
-            } else if (activeTab === 'pwaTab') {
-                url = document.getElementById('pwaUrl').value;
-            } else {
-                // لـ HTML ننشئ صفحة مؤقتة
-                alert('📝 لتحويل كود HTML، سيتم إنشاء صفحة مؤقتة ثم تحويلها');
-                const htmlContent = document.getElementById('htmlCode').value;
-                // هنا يمكن رفع HTML لخدمة استضافة
-                url = 'https://example.com'; // URL مؤقت
-            }
-            
-            window.open(`https://appcreator24.com/app-builder?url=${encodeURIComponent(url)}&name=${encodeURIComponent(appName)}`, '_blank');
-            showInstructions('App Creator 24');
-        }
-        
-        function showInstructions(serviceName) {
-            const instructions = `
-🎯 إرشادات استخدام ${serviceName}:
-
-1. انتظر تحميل الصفحة
-2. اتبع الخطوات في الموقع:
-   - أدخل اسم التطبيق
-   - اضبط الإعدادات المطلوبة
-   - انتظر عملية البناء
-3. حمّل ملف APK النهائي
-4. ثبّت التطبيق على جهازك
-
-✅ سيتم إنشاء APK حقيقي يعمل بدون أخطاء
-            `;
-            
-            alert(instructions);
-        }
-        
-        // إعداد افتراضي للروابط
-        window.addEventListener('load', function() {
-            console.log('🚀 محول HTML إلى APK الحقيقي جاهز!');
-            
-            // إضافة أمثلة لروابط مفيدة
-            setTimeout(() => {
-                if (!document.getElementById('websiteUrl').value) {
-                    document.getElementById('websiteUrl').value = 'https://www.example.com';
+            appIcon.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        iconPreview.innerHTML = `<img src="${e.target.result}" alt="App Icon">`;
+                        iconButton.textContent = 'تم تغيير الأيقونة';
+                    };
+                    reader.readAsDataURL(this.files[0]);
                 }
-                if (!document.getElementById('pwaUrl').value) {
-                    document.getElementById('pwaUrl').value = 'https://webboard-game.vercel.app';
-                }
-            }, 1000);
-        });
-        
-        // خدمة إضافية: تحويل HTML إلى URL
-        function convertHTMLToURL(htmlContent) {
-            return new Promise((resolve) => {
-                const blob = new Blob([htmlContent], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                resolve(url);
             });
-        }
-        
-        // توليد اسم حزمة تلقائي
-        document.getElementById('appName').addEventListener('input', function(e) {
-            const appName = e.target.value;
-            if (appName.length > 2) {
-                // يمكن إضافة منطق إضافي هنا
-            }
+            
+            splashImage.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        splashPreview.style.backgroundImage = `url(${e.target.result})`;
+                        splashPreview.style.backgroundSize = 'cover';
+                        splashPreview.style.backgroundPosition = 'center';
+                        splashButton.textContent = 'تم تغيير صورة التمهيد';
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+            
+            // معالجة تقديم النموذج
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // تفعيل زر التحميل
+                downloadBtn.disabled = false;
+                
+                // عرض شاشة التمهيد في المعاينة
+                splashPreview.classList.remove('hidden');
+                
+                // إخفاء شاشة التمهيد بعد المدة المحددة
+                setTimeout(function() {
+                    splashPreview.classList.add('hidden');
+                }, splashDuration.value * 1000);
+                
+                // عرض رسالة نجاح
+                alert('تم إنشاء التطبيق بنجاح! يمكنك الآن تحميل ملفات التطبيق.');
+            });
+            
+            // معالجة زر التحميل
+            downloadBtn.addEventListener('click', function() {
+                if (this.disabled) return;
+                
+                // في التطبيق الحقيقي، هنا سيتم إنشاء ملفات PWA الفعلية
+                // بما في ذلك manifest.json و service worker
+                alert('في التطبيق الحقيقي، سيتم هنا إنشاء ملفات التطبيق وتحميلها.');
+                
+                // مثال على إنشاء ملف manifest.json
+                const manifest = {
+                    "name": appName.value,
+                    "short_name": appName.value,
+                    "start_url": websiteUrl.value,
+                    "display": "standalone",
+                    "background_color": "#ffffff",
+                    "theme_color": "#4a6fa5",
+                    "version": appVersion.value,
+                    "icons": [
+                        {
+                            "src": "icon-192.png",
+                            "sizes": "192x192",
+                            "type": "image/png"
+                        },
+                        {
+                            "src": "icon-512.png",
+                            "sizes": "512x512",
+                            "type": "image/png"
+                        }
+                    ]
+                };
+                
+                // في التطبيق الحقيقي، سيتم هنا إنشاء ملف ZIP يحتوي على:
+                // 1. manifest.json
+                // 2. service-worker.js
+                // 3. أيقونات التطبيق
+                // 4. شاشة التمهيد
+                // 5. ملف HTML رئيسي يحول الزائر إلى موقعك
+                
+                console.log('Manifest:', JSON.stringify(manifest, null, 2));
+            });
         });
     </script>
 </body>
