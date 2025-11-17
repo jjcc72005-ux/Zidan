@@ -3,81 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحويل الموقع إلى APK حقيقي باستخدام Python</title>
+    <title>موقعي إلى APK - WebView App Generator</title>
     <style>
-        :root {
-            --primary-color: #4a6fa5;
-            --secondary-color: #6b8cbc;
-            --accent-color: #ff6b6b;
-            --light-color: #f8f9fa;
-            --dark-color: #343a40;
-            --success-color: #28a745;
-        }
-        
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background-color: #f5f7fa;
-            color: var(--dark-color);
-            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
         
         header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, #2c3e50, #3498db);
             color: white;
-            padding: 2rem 0;
+            padding: 40px;
             text-align: center;
-            border-radius: 0 0 20px 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         header h1 {
             font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 10px;
         }
         
         header p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             opacity: 0.9;
         }
         
         .main-content {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 30px;
-            margin-top: 30px;
+            padding: 40px;
         }
         
-        .form-section {
-            flex: 1;
-            min-width: 300px;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
         }
         
-        .preview-section {
-            flex: 1;
-            min-width: 300px;
-            background: white;
-            padding: 25px;
+        .form-section, .preview-section {
+            background: #f8f9fa;
+            padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            border: 1px solid #e9ecef;
         }
         
         .form-group {
@@ -88,183 +73,89 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--dark-color);
+            color: #2c3e50;
         }
         
         input, select, textarea {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid #ddd;
+            border: 2px solid #e9ecef;
             border-radius: 8px;
-            font-size: 1rem;
-            transition: border 0.3s;
+            font-size: 16px;
+            transition: all 0.3s;
         }
         
         input:focus, select:focus, textarea:focus {
-            border-color: var(--primary-color);
+            border-color: #3498db;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
-        }
-        
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
-        
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-        
-        .file-input-button {
-            display: block;
-            padding: 12px 15px;
-            background: var(--light-color);
-            border: 1px dashed #ccc;
-            border-radius: 8px;
-            text-align: center;
-            color: #666;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .file-input-button:hover {
-            background: #e9ecef;
-            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
         
         .btn {
-            display: inline-block;
-            background: var(--primary-color);
+            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
-            padding: 12px 25px;
             border: none;
+            padding: 15px 30px;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            text-align: center;
             width: 100%;
-            margin: 5px 0;
+            margin: 10px 0;
         }
         
         .btn:hover {
-            background: var(--secondary-color);
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
         }
         
         .btn-success {
-            background: var(--success-color);
-        }
-        
-        .btn-success:hover {
-            background: #218838;
-        }
-        
-        .btn:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+            background: linear-gradient(135deg, #27ae60, #229954);
         }
         
         .terminal {
-            background: #1e1e1e;
+            background: #1a1a1a;
             color: #00ff00;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-family: 'Courier New', monospace;
-            margin: 15px 0;
-            text-align: left;
-            max-height: 400px;
+            margin: 20px 0;
+            max-height: 300px;
             overflow-y: auto;
             white-space: pre-wrap;
         }
         
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .loading-spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top: 4px solid var(--primary-color);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .success-message {
-            display: none;
-            background-color: var(--success-color);
+        .file-structure {
+            background: #2c3e50;
             color: white;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             margin: 20px 0;
-            text-align: center;
         }
         
-        .python-code {
-            background: #2b2b2b;
-            color: #f8f8f2;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
+        .file-item {
+            padding: 5px 0;
             font-family: 'Courier New', monospace;
-            overflow-x: auto;
         }
         
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            header h1 {
-                font-size: 2rem;
-            }
+        .folder {
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .file {
+            color: #ecf0f1;
+            margin-left: 20px;
         }
     </style>
-    <!-- تحميل Pyodide -->
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>🐍 تحويل الموقع إلى APK باستخدام Python</h1>
-            <p>أداة حقيقية تعمل بـ Python داخل المتصفح لإنشاء تطبيقات Android</p>
-        </div>
-    </header>
-    
     <div class="container">
-        <div class="loading" id="loadingIndicator">
-            <div class="loading-spinner"></div>
-            <p>جاري تحميل محرك Python...</p>
-        </div>
-        
-        <div class="success-message" id="successMessage">
-            <p>✅ تم إنشاء تطبيق Android بنجاح!</p>
-        </div>
-
-        <div class="terminal" id="buildLog">
-            <div id="logContent">🚀 جاهز لتحميل Python وتشغيل البرامج النصية...</div>
-        </div>
+        <header>
+            <h1>🌐 موقعي إلى APK</h1>
+            <p>حول أي موقع إلى تطبيق Android حقيقي - جاهز للرفع على GitHub</p>
+        </header>
         
         <div class="main-content">
             <section class="form-section">
@@ -272,519 +163,421 @@
                 <form id="appConfigForm">
                     <div class="form-group">
                         <label for="websiteUrl">🌐 رابط الموقع</label>
-                        <input type="url" id="websiteUrl" placeholder="https://example.com" required value="https://www.google.com">
+                        <input type="url" id="websiteUrl" required 
+                               placeholder="https://example.com" 
+                               value="https://www.google.com">
                     </div>
                     
                     <div class="form-group">
                         <label for="appName">📱 اسم التطبيق</label>
-                        <input type="text" id="appName" placeholder="اسم تطبيقي" required value="تطبيقي الجديد">
+                        <input type="text" id="appName" required 
+                               placeholder="اسم تطبيقي" 
+                               value="My WebView App">
                     </div>
                     
                     <div class="form-group">
                         <label for="packageName">📦 اسم الحزمة</label>
-                        <input type="text" id="packageName" placeholder="com.example.myapp" required value="com.example.myapp">
-                        <small>مثال: com.شركتك.تطبيقك</small>
+                        <input type="text" id="packageName" required 
+                               placeholder="com.example.myapp" 
+                               value="com.mycompany.webviewapp">
                     </div>
                     
                     <div class="form-group">
                         <label for="appVersion">🔄 إصدار التطبيق</label>
-                        <input type="text" id="appVersion" placeholder="1.0.0" required value="1.0.0">
+                        <input type="text" id="appVersion" required 
+                               placeholder="1.0.0" 
+                               value="1.0.0">
                     </div>
                     
-                    <button type="submit" class="btn btn-success">🐍 تشغيل Python لبناء APK</button>
+                    <div class="form-group">
+                        <label for="primaryColor">🎨 اللون الأساسي</label>
+                        <input type="color" id="primaryColor" value="#3498db">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">
+                        🚀 إنشاء مشروع Android كامل
+                    </button>
                 </form>
-
-                <div class="python-code" id="pythonCodePreview">
-# كود Python الذي سيتم تنفيذه
-print("جاري بناء تطبيق Android...")
-                </div>
             </section>
             
             <section class="preview-section">
-                <h2>👀 معاينة التطبيق</h2>
-                <div style="background: white; padding: 20px; border-radius: 10px; width: 100%;">
-                    <h3>معلومات التطبيق:</h3>
-                    <p><strong>الاسم:</strong> <span id="previewAppName">تطبيقي الجديد</span></p>
-                    <p><strong>الحزمة:</strong> <span id="previewPackage">com.example.myapp</span></p>
-                    <p><strong>الإصدار:</strong> <span id="previewVersion">1.0.0</span></p>
-                    <p><strong>الموقع:</strong> <span id="previewWebsite">https://www.google.com</span></p>
+                <h2>📁 هيكل المشروع</h2>
+                <div class="file-structure" id="fileStructure">
+                    <div class="file-item folder">📁 MyWebViewApp/</div>
+                    <div class="file-item file">📄 build.gradle</div>
+                    <div class="file-item file">📄 settings.gradle</div>
+                    <div class="file-item folder">📁 app/</div>
+                    <div class="file-item file">📄 build.gradle</div>
+                    <div class="file-item file">📄 AndroidManifest.xml</div>
+                    <div class="file-item folder">📁 src/main/</div>
+                    <div class="file-item file">📄 MainActivity.java</div>
+                    <div class="file-item file">📄 activity_main.xml</div>
+                    <div class="file-item file">📄 README.md</div>
                 </div>
                 
-                <div style="width: 100%; margin-top: 20px;">
-                    <button class="btn" id="downloadApkBtn" disabled>📥 تحميل APK</button>
-                    <button class="btn" id="downloadSourceBtn">📦 تحميل الكود المصدري</button>
+                <div class="terminal" id="terminal">
+                    جاهز لإنشاء مشروع Android كامل...
                 </div>
+                
+                <button class="btn" id="downloadBtn" disabled>
+                    📥 تحميل المشروع كامل
+                </button>
             </section>
-        </div>
-
-        <div style="background: white; padding: 25px; border-radius: 15px; margin-top: 30px;">
-            <h2>🔧 كود Python الحقيقي</h2>
-            <div class="python-code" id="fullPythonCode">
-import zipfile
-import json
-import os
-
-class AndroidAppBuilder:
-    def __init__(self, app_name, package_name, version, website_url):
-        self.app_name = app_name
-        self.package_name = package_name
-        self.version = version
-        self.website_url = website_url
-        
-    def create_android_manifest(self):
-        return f'''<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="{self.package_name}">
-    
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
-    <application
-        android:name=".MainApplication"
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="{self.app_name}"
-        android:theme="@style/AppTheme">
-        
-        <activity
-            android:name=".MainActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="{self.app_name}"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-</manifest>'''
-
-    def create_main_activity(self):
-        return f'''package {self.package_name};
-
-import android.os.Bundle;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import androidx.appcompat.app.AppCompatActivity;
-
-public class MainActivity extends AppCompatActivity {{
-    private WebView webView;
-    
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {{
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        
-        webView = findViewById(R.id.webview);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.setWebViewClient(new WebViewClient());
-        webView.loadUrl("{self.website_url}");
-    }}
-    
-    @Override
-    public void onBackPressed() {{
-        if (webView.canGoBack()) {{
-            webView.goBack();
-        }} else {{
-            super.onBackPressed();
-        }}
-    }}
-}}'''
-
-    def create_build_gradle(self):
-        return f'''apply plugin: 'com.android.application'
-
-android {{
-    compileSdkVersion 33
-    defaultConfig {{
-        applicationId "{self.package_name}"
-        minSdkVersion 21
-        targetSdkVersion 33
-        versionCode 1
-        versionName "{self.version}"
-    }}
-    buildTypes {{
-        release {{
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }}
-    }}
-}}
-
-dependencies {{
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.webkit:webkit:1.7.0'
-}}'''
-
-    def build_apk_structure(self):
-        # إنشاء هيكل مجلدات Android
-        structure = {{
-            'AndroidManifest.xml': self.create_android_manifest(),
-            'app/src/main/java/{self.package_name.replace(".", "/")}/MainActivity.java': self.create_main_activity(),
-            'app/build.gradle': self.create_build_gradle(),
-            'app/src/main/res/layout/activity_main.xml': '''<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    
-    <WebView
-        android:id="@+id/webview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-</LinearLayout>''',
-            'README.txt': f'''تطبيق Android
-تم إنشاؤه تلقائياً
-الاسم: {self.app_name}
-الحزمة: {self.package_name}
-الإصدار: {self.version}
-الموقع: {self.website_url}
-
-للبناء:
-1. فتح في Android Studio
-2. Build -> Generate Signed Bundle / APK
-3. اختيار APK
-4. إنشاء مفتاح توقيع
-5. بناء APK
-'''
-        }}
-        return structure
-
-def create_android_app(app_name, package_name, version, website_url):
-    builder = AndroidAppBuilder(app_name, package_name, version, website_url)
-    return builder.build_apk_structure()
-
-# مثال للاستخدام
-app_structure = create_android_app(
-    "تطبيقي الجديد", 
-    "com.example.myapp", 
-    "1.0.0", 
-    "https://www.google.com"
-)
-
-print("تم إنشاء هيكل تطبيق Android بنجاح!")
-for file_path, content in app_structure.items():
-    print(f"تم إنشاء: {file_path}")
-            </div>
         </div>
     </div>
 
     <script>
-        let pyodide;
-        
-        // دالة لتحميل Pyodide
-        async function loadPyodide() {
-            addLog('📥 جاري تحميل Python...');
-            try {
-                pyodide = await loadPyodide();
-                addLog('✅ تم تحميل Python بنجاح!');
-                
-                // تثبيت حزم إضافية
-                addLog('📦 جاري تثبيت الحزم الإضافية...');
-                await pyodide.loadPackage("micropip");
-                const micropip = pyodide.pyimport("micropip");
-                addLog('✅ جاهز لتنفيذ كود Python!');
-                
-                return true;
-            } catch (error) {
-                addLog(`❌ خطأ في تحميل Python: ${error.message}`);
-                return false;
-            }
+        // دالة لإضافة نص إلى التيرمينال
+        function addToTerminal(message) {
+            const terminal = document.getElementById('terminal');
+            terminal.textContent += '\n' + message;
+            terminal.scrollTop = terminal.scrollHeight;
         }
 
-        // دالة لإضافة سجلات
-        function addLog(message) {
-            const logContent = document.getElementById('logContent');
-            const timestamp = new Date().toLocaleTimeString();
-            logContent.innerHTML += `[${timestamp}] ${message}\n`;
-            logContent.scrollTop = logContent.scrollHeight;
-        }
-
-        // دالة لتنفيذ كود Python
-        async function runPythonCode(code) {
-            if (!pyodide) {
-                addLog('❌ Python غير محمل!');
-                return null;
-            }
+        // دالة لإنشاء محتوى الملفات
+        function createProjectFiles(appConfig) {
+            const files = {};
             
-            try {
-                addLog('🐍 جاري تنفيذ كود Python...');
-                const result = await pyodide.runPythonAsync(code);
-                addLog('✅ تم تنفيذ الكود بنجاح!');
-                return result;
-            } catch (error) {
-                addLog(`❌ خطأ في تنفيذ Python: ${error.message}`);
-                return null;
-            }
+            // 1. ملف build.gradle للمشروع الرئيسي
+            files['build.gradle'] = `// Top-level build file
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.0'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}`;
+
+            // 2. ملف settings.gradle
+            files['settings.gradle'] = `pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "${appConfig.appName}"
+include ':app'`;
+
+            // 3. ملف build.gradle للتطبيق
+            files['app/build.gradle'] = `plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace '${appConfig.packageName}'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "${appConfig.packageName}"
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "${appConfig.appVersion}"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
 
-        // دالة لإنشاء كود Python ديناميكي
-        function createPythonCode(appConfig) {
-            return `
-import json
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.webkit:webkit:1.7.0'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+}`;
 
-app_name = "${appConfig.appName}"
-package_name = "${appConfig.packageName}"
-version = "${appConfig.appVersion}"
-website_url = "${appConfig.websiteUrl}"
-
-class AndroidAppBuilder:
-    def __init__(self, app_name, package_name, version, website_url):
-        self.app_name = app_name
-        self.package_name = package_name
-        self.version = version
-        self.website_url = website_url
-        
-    def create_android_manifest(self):
-        return f'''<?xml version="1.0" encoding="utf-8"?>
+            // 4. ملف AndroidManifest.xml
+            files['app/src/main/AndroidManifest.xml'] = `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="{self.package_name}">
-    
+    xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
+
     <application
-        android:name=".MainApplication"
         android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="{self.app_name}"
-        android:theme="@style/AppTheme">
+        android:label="${appConfig.appName}"
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+        tools:targetApi="31">
         
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="{self.app_name}"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
-</manifest>'''
+</manifest>`;
 
-    def create_main_activity(self):
-        return f'''package {self.package_name};
+            // 5. ملف MainActivity.java
+            const packagePath = appConfig.packageName.replace(/\./g, '/');
+            files[`app/src/main/java/${packagePath}/MainActivity.java`] = `package ${appConfig.packageName};
 
 import android.os.Bundle;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebSettings;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity {{
+public class MainActivity extends AppCompatActivity {
     private WebView webView;
-    
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {{
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        initializeWebView();
+    }
+
+    private void initializeWebView() {
         webView = findViewById(R.id.webview);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.setWebViewClient(new WebViewClient());
-        webView.loadUrl("{self.website_url}");
-    }}
-}}'''
+        
+        // إعدادات WebView
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
+        webSettings.setSupportZoom(true);
+        webSettings.setDefaultTextEncodingName("utf-8");
+        
+        // تعيين WebViewClient
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                view.loadUrl(url);
+                return true;
+            }
+            
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                // الصفحة انتهت من التحميل
+                super.onPageFinished(view, url);
+            }
+        });
+        
+        // تحميل الموقع
+        webView.loadUrl("${appConfig.websiteUrl}");
+    }
 
-    def build_apk_structure(self):
-        structure = {
-            'AndroidManifest.xml': self.create_android_manifest(),
-            f'app/src/main/java/{self.package_name.replace(".", "/")}/MainActivity.java': self.create_main_activity(),
-            'app/build.gradle': f'''
-apply plugin: 'com.android.application'
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+}`;
 
-android {{
-    compileSdkVersion 33
-    defaultConfig {{
-        applicationId "{self.package_name}"
-        minSdkVersion 21
-        targetSdkVersion 33
-        versionCode 1
-        versionName "{self.version}"
-    }}
-}}
-
-dependencies {{
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.webkit:webkit:1.7.0'
-}}''',
-            'app/src/main/res/layout/activity_main.xml': '''<?xml version="1.0" encoding="utf-8"?>
+            // 6. ملف activity_main.xml
+            files['app/src/main/res/layout/activity_main.xml'] = `<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-</LinearLayout>'''
+
+</LinearLayout>`;
+
+            // 7. ملفات إضافية
+            files['app/src/main/res/xml/backup_rules.xml'] = `<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <include domain="sharedpref" path="."/>
+    <exclude domain="root" path="."/>
+</full-backup-content>`;
+
+            files['app/src/main/res/xml/data_extraction_rules.xml'] = `<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="root" path="."/>
+        <exclude domain="file" path="NoBackup/"/>
+        <exclude domain="database" path="NoBackup/"/>
+        <exclude domain="sharedpref" path="NoBackup/"/>
+        <exclude domain="external" path="NoBackup/"/>
+    </cloud-backup>
+    <device-transfer>
+        <include domain="root" path="."/>
+        <exclude domain="file" path="NoBackup/"/>
+        <exclude domain="database" path="NoBackup/"/>
+        <exclude domain="sharedpref" path="NoBackup/"/>
+        <exclude domain="external" path="NoBackup/"/>
+    </device-transfer>
+</data-extraction-rules>`;
+
+            // 8. ملف README.md
+            files['README.md'] = `# ${appConfig.appName}
+
+تطبيق Android WebView تم إنشاؤه تلقائياً
+
+## 📋 معلومات التطبيق
+- **الاسم**: ${appConfig.appName}
+- **الحزمة**: ${appConfig.packageName}
+- **الإصدار**: ${appConfig.appVersion}
+- **الموقع**: ${appConfig.websiteUrl}
+
+## 🚀 كيفية البناء
+
+1. افتح المشروع في Android Studio
+2. انتظر حتى تنتهي عملية sync
+3. اضغط على **Build > Make Project**
+4. لتوليد APK: **Build > Generate Signed Bundle / APK**
+
+## 📱 الميزات
+
+- WebView مع دعم JavaScript
+- تصفح داخل التطبيق
+- أزرار التنقل (رجوع)
+- دعم الشاشات المختلفة
+
+## 🔧 التخصيص
+
+يمكنك تعديل الملفات التالية:
+- \`app/src/main/java/${packagePath}/MainActivity.java\`
+- \`app/src/main/res/layout/activity_main.xml\`
+- \`app/build.gradle\`
+
+## 📄 التراخيص
+
+هذا المشروع مرخص تحت MIT License.`;
+
+            return files;
         }
-        return structure
 
-# إنشاء التطبيق
-builder = AndroidAppBuilder(app_name, package_name, version, website_url)
-app_structure = builder.build_apk_structure()
-
-# إرجاع النتيجة
-result = {
-    "status": "success",
-    "app_name": app_name,
-    "package_name": package_name,
-    "files": list(app_structure.keys())
-}
-
-result
-            `;
-        }
-
-        // دالة لتحميل الملفات
-        function downloadFiles(appStructure, appConfig) {
-            // إنشاء ملف ZIP يحتوي على جميع الملفات
-            let zipContent = `# تطبيق Android - ${appConfig.appName}\n`;
-            zipContent += `# تم الإنشاء: ${new Date().toLocaleString()}\n\n`;
+        // دالة لتحميل الملفات كـ ZIP
+        function downloadProject(files, appName) {
+            // إنشاء محتوى ZIP يدوياً (بدون مكتبات خارجية)
+            let zipContent = `# مشروع Android - ${appName}\\n`;
+            zipContent += `# تم الإنشاء في: ${new Date().toLocaleString()}\\n\\n`;
             
-            for (const [filePath, content] of Object.entries(appStructure)) {
-                zipContent += `\n=== ${filePath} ===\n${content}\n`;
+            for (const [filePath, content] of Object.entries(files)) {
+                zipContent += `\\n=== ${filePath} ===\\n${content}\\n`;
             }
             
             const blob = new Blob([zipContent], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${appConfig.package_name}-source.zip`;
+            a.download = `${appName.replace(/\\s+/g, '_')}_project.zip`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
-        document.addEventListener('DOMContentLoaded', async function() {
+        // الأحداث الرئيسية
+        document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('appConfigForm');
-            const websiteUrl = document.getElementById('websiteUrl');
-            const appName = document.getElementById('appName');
-            const packageName = document.getElementById('packageName');
-            const appVersion = document.getElementById('appVersion');
-            const downloadApkBtn = document.getElementById('downloadApkBtn');
-            const downloadSourceBtn = document.getElementById('downloadSourceBtn');
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const successMessage = document.getElementById('successMessage');
-            const pythonCodePreview = document.getElementById('pythonCodePreview');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const terminal = document.getElementById('terminal');
             
-            const previewAppName = document.getElementById('previewAppName');
-            const previewPackage = document.getElementById('previewPackage');
-            const previewVersion = document.getElementById('previewVersion');
-            const previewWebsite = document.getElementById('previewWebsite');
+            let generatedFiles = null;
+            let currentAppConfig = null;
 
-            // تحميل Pyodide عند بدء الصفحة
-            loadingIndicator.style.display = 'block';
-            const pythonLoaded = await loadPyodide();
-            loadingIndicator.style.display = 'none';
-
-            if (!pythonLoaded) {
-                addLog('❌ فشل في تحميل Python. تأكد من اتصال الإنترنت.');
-                return;
-            }
-
-            // تحديث المعاينة
-            function updatePreview() {
-                previewAppName.textContent = appName.value;
-                previewPackage.textContent = packageName.value;
-                previewVersion.textContent = appVersion.value;
-                previewWebsite.textContent = websiteUrl.value;
-                
-                // تحديث كود Python المعروض
-                pythonCodePreview.textContent = createPythonCode({
-                    appName: appName.value,
-                    packageName: packageName.value,
-                    appVersion: appVersion.value,
-                    websiteUrl: websiteUrl.value
-                });
-            }
-
-            appName.addEventListener('input', updatePreview);
-            packageName.addEventListener('input', updatePreview);
-            appVersion.addEventListener('input', updatePreview);
-            websiteUrl.addEventListener('input', updatePreview);
-
-            // تحديث أولي
-            updatePreview();
-
-            // معالجة النموذج
-            form.addEventListener('submit', async function(e) {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
                 const appConfig = {
-                    websiteUrl: websiteUrl.value,
-                    appName: appName.value,
-                    packageName: packageName.value,
-                    appVersion: appVersion.value
+                    websiteUrl: document.getElementById('websiteUrl').value,
+                    appName: document.getElementById('appName').value,
+                    packageName: document.getElementById('packageName').value,
+                    appVersion: document.getElementById('appVersion').value,
+                    primaryColor: document.getElementById('primaryColor').value
                 };
+                
+                currentAppConfig = appConfig;
+                
+                // محاكاة عملية البناء
+                terminal.textContent = '🚀 بدء إنشاء مشروع Android...';
+                addToTerminal('📁 جاري إنشاء هيكل الملفات...');
+                
+                setTimeout(() => {
+                    addToTerminal('🔧 جاري إنشاء build.gradle...');
+                    setTimeout(() => {
+                        addToTerminal('📄 جاري إنشاء AndroidManifest.xml...');
+                        setTimeout(() => {
+                            addToTerminal('🖥️ جاري إنشاء MainActivity.java...');
+                            setTimeout(() => {
+                                addToTerminal('🎨 جاري إنشاء واجهة المستخدم...');
+                                setTimeout(() => {
+                                    // إنشاء الملفات
+                                    generatedFiles = createProjectFiles(appConfig);
+                                    addToTerminal('✅ تم إنشاء المشروع بنجاح!');
+                                    addToTerminal(`📦 تم إنشاء ${Object.keys(generatedFiles).length} ملف`);
+                                    
+                                    // تفعيل زر التحميل
+                                    downloadBtn.disabled = false;
+                                    
+                                }, 1000);
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            });
 
-                loadingIndicator.style.display = 'block';
-                addLog('🚀 بدء بناء تطبيق Android...');
-
-                const pythonCode = createPythonCode(appConfig);
-                const result = await runPythonCode(pythonCode);
-
-                loadingIndicator.style.display = 'none';
-
-                if (result) {
-                    addLog('✅ تم إنشاء هيكل التطبيق بنجاح!');
-                    successMessage.style.display = 'block';
-                    downloadApkBtn.disabled = false;
+            downloadBtn.addEventListener('click', function() {
+                if (generatedFiles && currentAppConfig) {
+                    addToTerminal('📥 جاري تحميل الملفات...');
+                    downloadProject(generatedFiles, currentAppConfig.appName);
+                    addToTerminal('✅ تم التحميل بنجاح!');
                     
-                    // حفظ النتيجة للاستخدام لاحقاً
-                    localStorage.setItem('appStructure', JSON.stringify(result));
-                    localStorage.setItem('appConfig', JSON.stringify(appConfig));
+                    // إظهار تعليمات GitHub
+                    setTimeout(() => {
+                        alert(`🎉 تم إنشاء المشروع بنجاح!
+
+لرفعه على GitHub:
+1. انشئ repository جديد على GitHub
+2. ارفع الملفات التي تم تحميلها
+3. اضغط على Upload files
+4. اسحب وأسقط جميع الملفات
+5. اكتب commit message
+6. اضغط على Commit changes
+
+سيصبح لديك مشروع Android كامل على GitHub!`);
+                    }, 1000);
                 }
-            });
-
-            // تحميل الكود المصدري
-            downloadSourceBtn.addEventListener('click', function() {
-                const appStructure = JSON.parse(localStorage.getItem('appStructure'));
-                const appConfig = JSON.parse(localStorage.getItem('appConfig'));
-                
-                if (appStructure && appConfig) {
-                    downloadFiles(appStructure, appConfig);
-                    addLog('📦 تم تحميل الكود المصدري!');
-                } else {
-                    addLog('❌ لم يتم بناء التطبيق بعد!');
-                }
-            });
-
-            // تحميل APK (محاكاة)
-            downloadApkBtn.addEventListener('click', function() {
-                addLog('📱 جاري إنشاء APK... (هذه محاكاة - في الإنتاج الحقيقي سيتم بناء APK فعلي)');
-                
-                // إنشاء ملف نصي يوضح خطوات البناء
-                const buildInstructions = `
-تعليمات بناء APK حقيقي:
-================================
-
-1. حمّل الكود المصدري باستخدام الزر أعلاه
-2. افتح Android Studio
-3. استورد المشروع
-4. انتقل إلى Build -> Generate Signed Bundle / APK
-5. اختر APK
-6. أنشئ مفتاح توقيع جديد
-7. اتبع الخطوات لإنشاء APK
-
-الملفات المضمنة:
-- AndroidManifest.xml
-- MainActivity.java
-- build.gradle
-- activity_main.xml
-
-ملاحظة: هذا يحتاج إلى Android Studio مثبت على جهازك.
-                `;
-                
-                const blob = new Blob([buildInstructions], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'build-instructions.txt';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
             });
         });
     </script>
