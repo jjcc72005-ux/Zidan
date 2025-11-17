@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحويل الموقع إلى تطبيق</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         :root {
             --primary-color: #4a6fa5;
@@ -169,6 +171,13 @@
             background: #218838;
         }
         
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
         .preview-container {
             width: 100%;
             max-width: 300px;
@@ -217,6 +226,7 @@
             text-align: center;
             padding: 20px;
             transition: opacity 1s;
+            z-index: 10;
         }
         
         .splash-screen.hidden {
@@ -286,6 +296,27 @@
             padding: 20px;
             color: #666;
             border-top: 1px solid #eee;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         @media (max-width: 768px) {
@@ -385,6 +416,11 @@
                     </div>
                 </div>
                 
+                <div class="loading" id="loadingIndicator">
+                    <div class="loading-spinner"></div>
+                    <p>جاري إنشاء ملفات التطبيق...</p>
+                </div>
+                
                 <div style="width: 100%; margin-top: 20px;">
                     <button class="btn" id="downloadBtn" disabled>تحميل ملفات التطبيق</button>
                     <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
@@ -395,37 +431,37 @@
         </div>
         
         <section class="instructions">
-            <h2>كيفية تحويل موقعك إلى تطبيق</h2>
+            <h2>كيفية استخدام التطبيق بعد التحميل</h2>
             
             <div class="step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <h3>أدخل رابط موقعك</h3>
-                    <p>أدخل الرابط الكامل لموقعك الإلكتروني الذي تريد تحويله إلى تطبيق</p>
+                    <h3>قم بتحميل الملفات</h3>
+                    <p>بعد تعبئة النموذج، انقر على زر "تحميل ملفات التطبيق" لتحميل ملف ZIP</p>
                 </div>
             </div>
             
             <div class="step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                    <h3>قم بتخصيص التطبيق</h3>
-                    <p>اختر اسم التطبيق، الإصدار، أيقونة التطبيق، وشاشة التمهيد حسب رغبتك</p>
+                    <h3>افتح ملف ZIP</h3>
+                    <p>قم بفك ضغط ملف ZIP الذي تم تحميله على جهازك</p>
                 </div>
             </div>
             
             <div class="step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <h3>أنشئ التطبيق</h3>
-                    <p>انقر على زر "إنشاء التطبيق" لمعاينة النتيجة وتوليد ملفات التطبيق</p>
+                    <h3>ارفع الملفات إلى موقعك</h3>
+                    <p>قم برفع جميع الملفات الموجودة داخل مجلد ZIP إلى الخادم الخاص بموقعك</p>
                 </div>
             </div>
             
             <div class="step">
                 <div class="step-number">4</div>
                 <div class="step-content">
-                    <h3>قم بتحميل الملفات</h3>
-                    <p>بعد إنشاء التطبيق، قم بتحميل ملفات التطبيق ورفعها إلى خادم موقعك</p>
+                    <h3>أضف الرابط إلى موقعك</h3>
+                    <p>أضف رابط ملف index.html إلى موقعك الرئيسي ليتمكن الزوار من تثبيت التطبيق</p>
                 </div>
             </div>
         </section>
@@ -448,6 +484,7 @@
             const splashText = document.getElementById('splashText');
             const splashDuration = document.getElementById('splashDuration');
             const downloadBtn = document.getElementById('downloadBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
             
             const appNamePreview = document.getElementById('appNamePreview');
             const appHeaderPreview = document.getElementById('appHeaderPreview');
@@ -458,6 +495,9 @@
             const iconButton = document.getElementById('iconButton');
             const splashButton = document.getElementById('splashButton');
             
+            let appIconData = null;
+            let splashImageData = null;
+
             // تحديث المعاينة عند تغيير المدخلات
             appName.addEventListener('input', function() {
                 appNamePreview.textContent = this.value || 'اسم التطبيق';
@@ -472,7 +512,8 @@
                 if (this.files && this.files[0]) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        iconPreview.innerHTML = `<img src="${e.target.result}" alt="App Icon">`;
+                        appIconData = e.target.result;
+                        iconPreview.innerHTML = `<img src="${appIconData}" alt="App Icon">`;
                         iconButton.textContent = 'تم تغيير الأيقونة';
                     };
                     reader.readAsDataURL(this.files[0]);
@@ -483,7 +524,8 @@
                 if (this.files && this.files[0]) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        splashPreview.style.backgroundImage = `url(${e.target.result})`;
+                        splashImageData = e.target.result;
+                        splashPreview.style.backgroundImage = `url(${splashImageData})`;
                         splashPreview.style.backgroundSize = 'cover';
                         splashPreview.style.backgroundPosition = 'center';
                         splashButton.textContent = 'تم تغيير صورة التمهيد';
@@ -512,44 +554,214 @@
             });
             
             // معالجة زر التحميل
-            downloadBtn.addEventListener('click', function() {
+            downloadBtn.addEventListener('click', async function() {
                 if (this.disabled) return;
                 
-                // في التطبيق الحقيقي، هنا سيتم إنشاء ملفات PWA الفعلية
-                // بما في ذلك manifest.json و service worker
-                alert('في التطبيق الحقيقي، سيتم هنا إنشاء ملفات التطبيق وتحميلها.');
+                // إظهار مؤشر التحميل
+                loadingIndicator.style.display = 'block';
+                this.disabled = true;
                 
-                // مثال على إنشاء ملف manifest.json
-                const manifest = {
-                    "name": appName.value,
-                    "short_name": appName.value,
-                    "start_url": websiteUrl.value,
-                    "display": "standalone",
-                    "background_color": "#ffffff",
-                    "theme_color": "#4a6fa5",
-                    "version": appVersion.value,
-                    "icons": [
-                        {
-                            "src": "icon-192.png",
-                            "sizes": "192x192",
-                            "type": "image/png"
-                        },
-                        {
-                            "src": "icon-512.png",
-                            "sizes": "512x512",
-                            "type": "image/png"
-                        }
-                    ]
-                };
-                
-                // في التطبيق الحقيقي، سيتم هنا إنشاء ملف ZIP يحتوي على:
-                // 1. manifest.json
-                // 2. service-worker.js
-                // 3. أيقونات التطبيق
-                // 4. شاشة التمهيد
-                // 5. ملف HTML رئيسي يحول الزائر إلى موقعك
-                
-                console.log('Manifest:', JSON.stringify(manifest, null, 2));
+                try {
+                    // إنشاء ملف ZIP
+                    const zip = new JSZip();
+                    
+                    // إنشاء مجلد للتطبيق
+                    const appFolder = zip.folder("pwa-app");
+                    
+                    // إنشاء ملف manifest.json
+                    const manifest = {
+                        "name": appName.value,
+                        "short_name": appName.value.substring(0, 12),
+                        "start_url": websiteUrl.value,
+                        "display": "standalone",
+                        "background_color": "#ffffff",
+                        "theme_color": "#4a6fa5",
+                        "version": appVersion.value,
+                        "icons": [
+                            {
+                                "src": "icon-192.png",
+                                "sizes": "192x192",
+                                "type": "image/png"
+                            },
+                            {
+                                "src": "icon-512.png",
+                                "sizes": "512x512",
+                                "type": "image/png"
+                            }
+                        ]
+                    };
+                    
+                    appFolder.file("manifest.json", JSON.stringify(manifest, null, 2));
+                    
+                    // إنشاء service worker
+                    const serviceWorker = `
+// Service Worker للتطبيق
+const CACHE_NAME = '${appName.value.replace(/\s+/g, '-').toLowerCase()}-v${appVersion.value}';
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json'
+];
+
+self.addEventListener('install', function(event) {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    caches.match(event.request)
+      .then(function(response) {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request);
+      }
+    )
+  );
+});
+                    `;
+                    
+                    appFolder.file("sw.js", serviceWorker);
+                    
+                    // إنشاء ملف index.html الرئيسي
+                    const indexHtml = `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${appName.value}</title>
+    <meta name="theme-color" content="#4a6fa5">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #4a6fa5, #6b8cbc);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="loading-spinner"></div>
+        <h2>جاري التوجيه إلى ${appName.value}</h2>
+        <p>إذا لم يتم توجيهك تلقائياً، <a href="${websiteUrl.value}" style="color: white;">انقر هنا</a></p>
+    </div>
+    
+    <script>
+        // تسجيل Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(function(registration) {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+        
+        // التوجيه إلى الموقع بعد ثانيتين
+        setTimeout(function() {
+            window.location.href = '${websiteUrl.value}';
+        }, 2000);
+        
+        // إظهار نصب التثبيت إذا كان المتصفح يدعمه
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            const installButton = document.createElement('button');
+            installButton.textContent = 'تثبيت التطبيق';
+            installButton.style.cssText = \`
+                background: white;
+                color: #4a6fa5;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                margin-top: 20px;
+                cursor: pointer;
+                font-weight: bold;
+            \`;
+            installButton.onclick = () => e.prompt();
+            document.querySelector('.container').appendChild(installButton);
+        });
+    </script>
+</body>
+</html>
+                    `;
+                    
+                    appFolder.file("index.html", indexHtml);
+                    
+                    // إنشاء ملف README مع التعليمات
+                    const readme = `
+# تطبيق ${appName.value}
+
+هذا التطبيق تم إنشاؤه باستخدام أداة تحويل المواقع إلى تطبيقات.
+
+## كيفية الاستخدام:
+
+1. قم برفع جميع الملفات إلى خادم الويب الخاص بك
+2. تأكد من أن الخادم يدعم HTTPS (مطلوب لـ PWA)
+3. أضف الرابط التالي إلى موقعك الرئيسي:
+   https://yourdomain.com/pwa-app/index.html
+
+## الملفات المضمنة:
+
+- index.html - الصفحة الرئيسية للتطبيق
+- manifest.json - إعدادات التطبيق
+- sw.js - Service Worker للعمل دون اتصال
+
+## معلومات التطبيق:
+
+- الإصدار: ${appVersion.value}
+- الرابط المستهدف: ${websiteUrl.value}
+- تم الإنشاء في: ${new Date().toLocaleDateString('ar-EG')}
+                    `;
+                    
+                    appFolder.file("README.txt", readme);
+                    
+                    // إنشاء ملف ZIP وتنزيله
+                    const content = await zip.generateAsync({type: "blob"});
+                    saveAs(content, `${appName.value.replace(/\s+/g, '-')}-pwa.zip`);
+                    
+                    // إعادة تعيين الزر وإخفاء المؤشر
+                    this.disabled = false;
+                    loadingIndicator.style.display = 'none';
+                    
+                } catch (error) {
+                    console.error('Error generating ZIP:', error);
+                    alert('حدث خطأ أثناء إنشاء الملفات. يرجى المحاولة مرة أخرى.');
+                    
+                    // إعادة تعيين الزر وإخفاء المؤشر
+                    this.disabled = false;
+                    loadingIndicator.style.display = 'none';
+                }
             });
         });
     </script>
