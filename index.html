@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحويل الموقع إلى تطبيق</title>
+    <title>تحويل الموقع إلى تطبيق PWA</title>
     <style>
         :root {
             --primary-color: #4a6fa5;
@@ -153,6 +153,7 @@
             transition: all 0.3s;
             text-align: center;
             width: 100%;
+            margin: 5px 0;
         }
         
         .btn:hover {
@@ -327,6 +328,16 @@
             text-align: center;
         }
         
+        .install-prompt {
+            display: none;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -341,19 +352,24 @@
 <body>
     <header>
         <div class="container">
-            <h1>تحويل موقعك إلى تطبيق</h1>
-            <p>قم بتحويل موقعك الإلكتروني إلى تطبيق جوال مع إمكانية تخصيص الاسم، الأيقونة، والإصدار</p>
+            <h1>تحويل موقعك إلى تطبيق PWA</h1>
+            <p>قم بتحويل موقعك الإلكتروني إلى تطبيق جوال حقيقي يمكن تثبيته على الهاتف</p>
         </div>
     </header>
     
     <div class="container">
+        <div class="install-prompt" id="installPrompt">
+            <p>يمكنك تثبيت هذا التطبيق على جهازك!</p>
+            <button class="btn" id="installBtn">تثبيت التطبيق</button>
+        </div>
+        
         <div class="loading" id="loadingIndicator">
             <div class="loading-spinner"></div>
             <p>جاري إنشاء التطبيق، الرجاء الانتظار...</p>
         </div>
         
         <div class="success-message" id="successMessage">
-            <p>تم إنشاء التطبيق بنجاح! يمكنك الآن تحميل ملفات التطبيق.</p>
+            <p>تم إنشاء التطبيق بنجاح! يمكنك الآن تثبيته على جهازك.</p>
         </div>
         
         <div class="main-content">
@@ -362,17 +378,17 @@
                 <form id="appConfigForm">
                     <div class="form-group">
                         <label for="websiteUrl">رابط الموقع</label>
-                        <input type="url" id="websiteUrl" placeholder="https://example.com" required>
+                        <input type="url" id="websiteUrl" placeholder="https://example.com" required value="https://www.google.com">
                     </div>
                     
                     <div class="form-group">
                         <label for="appName">اسم التطبيق</label>
-                        <input type="text" id="appName" placeholder="اسم تطبيقي" required>
+                        <input type="text" id="appName" placeholder="اسم تطبيقي" required value="تطبيقي الجديد">
                     </div>
                     
                     <div class="form-group">
                         <label for="appVersion">إصدار التطبيق</label>
-                        <input type="text" id="appVersion" placeholder="1.0.0" required>
+                        <input type="text" id="appVersion" placeholder="1.0.0" required value="1.0.0">
                     </div>
                     
                     <div class="form-group">
@@ -399,7 +415,7 @@
                     
                     <div class="form-group">
                         <label for="splashText">نص شاشة التمهيد (اختياري)</label>
-                        <textarea id="splashText" rows="3" placeholder="مرحباً بك في تطبيقي"></textarea>
+                        <textarea id="splashText" rows="3" placeholder="مرحباً بك في تطبيقي">مرحباً بك في تطبيقي الجديد</textarea>
                     </div>
                     
                     <div class="form-group">
@@ -420,60 +436,53 @@
                                 <div class="app-icon" id="iconPreview">
                                     <span>App</span>
                                 </div>
-                                <h3 id="appNamePreview">اسم التطبيق</h3>
-                                <p id="splashTextPreview">مرحباً بك في تطبيقنا</p>
+                                <h3 id="appNamePreview">تطبيقي الجديد</h3>
+                                <p id="splashTextPreview">مرحباً بك في تطبيقي الجديد</p>
                             </div>
                             <div class="app-header" id="appHeaderPreview">
-                                اسم التطبيق
+                                تطبيقي الجديد
                             </div>
-                            <div style="padding: 15px;">
-                                <p>سيتم تحميل موقعك هنا بعد إنشاء التطبيق</p>
+                            <div style="padding: 15px; height: 100%;">
+                                <iframe id="websiteFrame" src="https://www.google.com" style="width: 100%; height: 100%; border: none;"></iframe>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <div style="width: 100%; margin-top: 20px;">
-                    <button class="btn" id="downloadBtn" disabled>تحميل ملفات التطبيق</button>
+                    <button class="btn" id="testPwaBtn">اختبار التطبيق</button>
+                    <button class="btn" id="installManualBtn">تعليمات التثبيت</button>
                     <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
-                        بعد تعبئة النموذج، سيتم تفعيل زر التحميل
+                        بعد إنشاء التطبيق، يمكنك اختباره وتثبيته
                     </p>
                 </div>
             </section>
         </div>
         
         <section class="instructions">
-            <h2>كيفية تحويل موقعك إلى تطبيق</h2>
+            <h2>كيفية تثبيت التطبيق على جهازك</h2>
             
             <div class="step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <h3>أدخل رابط موقعك</h3>
-                    <p>أدخل الرابط الكامل لموقعك الإلكتروني الذي تريد تحويله إلى تطبيق</p>
+                    <h3>لأجهزة Android/Chrome</h3>
+                    <p>افتح القائمة (النقاط الثلاث) → اختر "تثبيت التطبيق" أو "Add to Home screen"</p>
                 </div>
             </div>
             
             <div class="step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                    <h3>قم بتخصيص التطبيق</h3>
-                    <p>اختر اسم التطبيق، الإصدار، أيقونة التطبيق، وشاشة التمهيد حسب رغبتك</p>
+                    <h3>لأجهزة iPhone/Safari</h3>
+                    <p>انقر على زر المشاركة → اختر "إضافة إلى الشاشة الرئيسية"</p>
                 </div>
             </div>
             
             <div class="step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <h3>أنشئ التطبيق</h3>
-                    <p>انقر على زر "إنشاء التطبيق" لمعاينة النتيجة وتوليد ملفات التطبيق</p>
-                </div>
-            </div>
-            
-            <div class="step">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <h3>قم بتحميل الملفات</h3>
-                    <p>بعد إنشاء التطبيق، قم بتحميل ملفات التطبيق ورفعها إلى خادم موقعك</p>
+                    <h3>لأجهزة الكمبيوتر</h3>
+                    <p>في Chrome أو Edge: انقر على زر التثبيت في شريط العنوان</p>
                 </div>
             </div>
         </section>
@@ -481,11 +490,42 @@
     
     <footer>
         <div class="container">
-            <p>© 2023 - جميع الحقوق محفوظة | أداة تحويل المواقع إلى تطبيقات</p>
+            <p>© 2023 - جميع الحقوق محفوظة | أداة تحويل المواقع إلى تطبيقات PWA</p>
         </div>
     </footer>
 
     <script>
+        // تعريف deferredPrompt للاستخدام لاحقاً
+        let deferredPrompt;
+        
+        // استماع لحدث beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // منع المتصفح من عرض رسالة التثبيت التلقائية
+            e.preventDefault();
+            // حفظ الحدث ليتم استخدامه لاحقاً
+            deferredPrompt = e;
+            // عرض زر التثبيت الخاص بنا
+            const installPrompt = document.getElementById('installPrompt');
+            installPrompt.style.display = 'block';
+        });
+        
+        // معالجة زر التثبيت
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            
+            // عرض رسالة التثبيت
+            deferredPrompt.prompt();
+            
+            // انتظار اختيار المستخدم
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            // مسح deferredPrompt بعد الاستخدام
+            deferredPrompt = null;
+            
+            // إخفاء زر التثبيت
+            document.getElementById('installPrompt').style.display = 'none';
+        });
+        
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('appConfigForm');
             const websiteUrl = document.getElementById('websiteUrl');
@@ -495,9 +535,11 @@
             const splashImage = document.getElementById('splashImage');
             const splashText = document.getElementById('splashText');
             const splashDuration = document.getElementById('splashDuration');
-            const downloadBtn = document.getElementById('downloadBtn');
+            const testPwaBtn = document.getElementById('testPwaBtn');
+            const installManualBtn = document.getElementById('installManualBtn');
             const loadingIndicator = document.getElementById('loadingIndicator');
             const successMessage = document.getElementById('successMessage');
+            const websiteFrame = document.getElementById('websiteFrame');
             
             const appNamePreview = document.getElementById('appNamePreview');
             const appHeaderPreview = document.getElementById('appHeaderPreview');
@@ -512,6 +554,11 @@
             appName.addEventListener('input', function() {
                 appNamePreview.textContent = this.value || 'اسم التطبيق';
                 appHeaderPreview.textContent = this.value || 'اسم التطبيق';
+                document.title = this.value || 'تطبيق PWA';
+            });
+            
+            websiteUrl.addEventListener('input', function() {
+                websiteFrame.src = this.value;
             });
             
             splashText.addEventListener('input', function() {
@@ -555,11 +602,11 @@
                     // إخفاء مؤشر التحميل
                     loadingIndicator.style.display = 'none';
                     
-                    // تفعيل زر التحميل
-                    downloadBtn.disabled = false;
-                    
                     // عرض رسالة النجاح
                     successMessage.style.display = 'block';
+                    
+                    // إنشاء وتحديث PWA Manifest
+                    updatePwaManifest();
                     
                     // عرض شاشة التمهيد في المعاينة
                     splashPreview.classList.remove('hidden');
@@ -568,129 +615,88 @@
                     setTimeout(function() {
                         splashPreview.classList.add('hidden');
                     }, splashDuration.value * 1000);
-                }, 2000); // محاكاة وقت معالجة 2 ثانية
+                }, 2000);
             });
             
-            // معالجة زر التحميل
-            downloadBtn.addEventListener('click', function() {
-                if (this.disabled) return;
-                
-                // إظهار مؤشر التحميل
-                loadingIndicator.style.display = 'block';
-                
-                // محاكاة عملية إنشاء ملفات التطبيق
-                setTimeout(function() {
-                    // إخفاء مؤشر التحميل
-                    loadingIndicator.style.display = 'none';
-                    
-                    // مثال على إنشاء ملف manifest.json
-                    const manifest = {
-                        "name": appName.value,
-                        "short_name": appName.value,
-                        "start_url": websiteUrl.value,
-                        "display": "standalone",
-                        "background_color": "#ffffff",
-                        "theme_color": "#4a6fa5",
-                        "version": appVersion.value,
-                        "icons": [
-                            {
-                                "src": "icon-192.png",
-                                "sizes": "192x192",
-                                "type": "image/png"
-                            },
-                            {
-                                "src": "icon-512.png",
-                                "sizes": "512x512",
-                                "type": "image/png"
-                            }
-                        ]
-                    };
-                    
-                    // إنشاء ملف manifest.json
-                    const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {type: 'application/json'});
-                    const manifestUrl = URL.createObjectURL(manifestBlob);
-                    
-                    // إنشاء ملف service worker بسيط
-                    const serviceWorkerContent = `
-                        const CACHE_NAME = '${appName.value}-v${appVersion.value}';
-                        const urlsToCache = [
-                            '/',
-                            '${websiteUrl.value}'
-                        ];
-                        
-                        self.addEventListener('install', function(event) {
-                            event.waitUntil(
-                                caches.open(CACHE_NAME)
-                                    .then(function(cache) {
-                                        return cache.addAll(urlsToCache);
-                                    })
-                            );
-                        });
-                        
-                        self.addEventListener('fetch', function(event) {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(function(response) {
-                                        if (response) {
-                                            return response;
-                                        }
-                                        return fetch(event.request);
-                                    }
-                                )
-                            );
-                        });
-                    `;
-                    
-                    const serviceWorkerBlob = new Blob([serviceWorkerContent], {type: 'application/javascript'});
-                    const serviceWorkerUrl = URL.createObjectURL(serviceWorkerBlob);
-                    
-                    // إنشاء ملف HTML رئيسي
-                    const htmlContent = `
-                        <!DOCTYPE html>
-                        <html lang="ar" dir="rtl">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>${appName.value}</title>
-                            <link rel="manifest" href="manifest.json">
-                            <meta name="theme-color" content="#4a6fa5">
-                        </head>
-                        <body>
-                            <script>
-                                if ('serviceWorker' in navigator) {
-                                    window.addEventListener('load', function() {
-                                        navigator.serviceWorker.register('service-worker.js')
-                                            .then(function(registration) {
-                                                console.log('Service Worker registered with scope:', registration.scope);
-                                            }, function(error) {
-                                                console.log('Service Worker registration failed:', error);
-                                            });
-                                    });
-                                }
-                                
-                                // إعادة التوجيه إلى الموقع الرئيسي
-                                window.location.href = '${websiteUrl.value}';
-                            <\/script>
-                        </body>
-                        </html>
-                    `;
-                    
-                    const htmlBlob = new Blob([htmlContent], {type: 'text/html'});
-                    const htmlUrl = URL.createObjectURL(htmlBlob);
-                    
-                    // إنشاء ملف ZIP افتراضي (في التطبيق الحقيقي، استخدم مكتبة مثل JSZip)
-                    alert('في التطبيق الحقيقي، سيتم هنا إنشاء ملف ZIP يحتوي على:\n- index.html\n- manifest.json\n- service-worker.js\n- أيقونات التطبيق\n\nسيتم تحميل الملف فوراً.');
-                    
-                    console.log('Manifest:', JSON.stringify(manifest, null, 2));
-                    console.log('Service Worker:', serviceWorkerContent);
-                    console.log('HTML:', htmlContent);
-                    
-                    // تحرير الذاكرة
-                    URL.revokeObjectURL(manifestUrl);
-                    URL.revokeObjectURL(serviceWorkerUrl);
-                    URL.revokeObjectURL(htmlUrl);
-                }, 1500); // محاكاة وقت إنشاء الملفات
+            // زر اختبار التطبيق
+            testPwaBtn.addEventListener('click', function() {
+                // فتح الموقع في نافذة جديدة لمحاكاة تجربة التطبيق
+                const siteUrl = websiteUrl.value || 'https://www.google.com';
+                window.open(siteUrl, '_blank');
             });
+            
+            // زر تعليمات التثبيت
+            installManualBtn.addEventListener('click', function() {
+                alert(`لتَثبيت التطبيق على جهازك:
+                
+- Android/Chrome: اضغط على القائمة (النقاط الثلاث) → "تثبيت التطبيق"
+- iPhone/Safari: اضغط على زر المشاركة → "إضافة إلى الشاشة الرئيسية"
+- الكمبيوتر: ابحث عن زر التثبيت في شريط العنوان
+
+ملاحظة: قد تظهر رسالة التثبيت تلقائياً في بعض المتصفحات.`);
+            });
+            
+            // دالة لتحديث PWA Manifest
+            function updatePwaManifest() {
+                const manifest = {
+                    "name": appName.value,
+                    "short_name": appName.value.substring(0, 12),
+                    "start_url": websiteUrl.value,
+                    "display": "standalone",
+                    "background_color": "#ffffff",
+                    "theme_color": "#4a6fa5",
+                    "icons": [
+                        {
+                            "src": "/icon-192.png",
+                            "sizes": "192x192",
+                            "type": "image/png"
+                        },
+                        {
+                            "src": "/icon-512.png",
+                            "sizes": "512x512",
+                            "type": "image/png"
+                        }
+                    ]
+                };
+                
+                // إنشاء رابط لملف الmanifest
+                const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+                const manifestURL = URL.createObjectURL(manifestBlob);
+                
+                // تحديث رابط الmanifest في الصفحة
+                const manifestElement = document.querySelector('link[rel="manifest"]');
+                if (manifestElement) {
+                    manifestElement.href = manifestURL;
+                } else {
+                    const link = document.createElement('link');
+                    link.rel = 'manifest';
+                    link.href = manifestURL;
+                    document.head.appendChild(link);
+                }
+                
+                // تحديث لون الثيم
+                const themeMeta = document.querySelector('meta[name="theme-color"]');
+                if (themeMeta) {
+                    themeMeta.content = "#4a6fa5";
+                }
+                
+                console.log('تم تحديث إعدادات PWA:', manifest);
+            }
+            
+            // تسجيل Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(function(registration) {
+                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        }, function(err) {
+                            console.log('ServiceWorker registration failed: ', err);
+                        });
+                });
+            }
+            
+            // تهيئة القيم الافتراضية
+            updatePwaManifest();
         });
     </script>
 </body>
