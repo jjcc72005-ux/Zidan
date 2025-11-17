@@ -152,6 +152,7 @@
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
+            width: 100%;
         }
         
         .btn:hover {
@@ -169,7 +170,7 @@
         }
         
         .btn:disabled {
-            background: #6c757d;
+            background: #cccccc;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -298,16 +299,16 @@
         .loading {
             display: none;
             text-align: center;
-            margin: 10px 0;
+            margin: 20px 0;
         }
         
         .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
+            border: 4px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 2s linear infinite;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
             margin: 0 auto 10px;
         }
         
@@ -317,23 +318,13 @@
         }
         
         .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 15px 0;
-            text-align: center;
             display: none;
-        }
-        
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 12px;
+            background-color: var(--success-color);
+            color: white;
+            padding: 15px;
             border-radius: 8px;
-            margin: 15px 0;
+            margin: 20px 0;
             text-align: center;
-            display: none;
         }
         
         @media (max-width: 768px) {
@@ -356,10 +347,19 @@
     </header>
     
     <div class="container">
+        <div class="loading" id="loadingIndicator">
+            <div class="loading-spinner"></div>
+            <p>جاري إنشاء التطبيق، الرجاء الانتظار...</p>
+        </div>
+        
+        <div class="success-message" id="successMessage">
+            <p>تم إنشاء التطبيق بنجاح! يمكنك الآن تحميل ملفات التطبيق.</p>
+        </div>
+        
         <div class="main-content">
             <section class="form-section">
                 <h2>إعدادات التطبيق</h2>
-                <div id="appConfigForm">
+                <form id="appConfigForm">
                     <div class="form-group">
                         <label for="websiteUrl">رابط الموقع</label>
                         <input type="url" id="websiteUrl" placeholder="https://example.com" required>
@@ -407,8 +407,8 @@
                         <input type="number" id="splashDuration" min="1" max="10" value="3">
                     </div>
                     
-                    <button type="button" class="btn btn-success" id="createAppBtn">إنشاء التطبيق</button>
-                </div>
+                    <button type="submit" class="btn btn-success">إنشاء التطبيق</button>
+                </form>
             </section>
             
             <section class="preview-section">
@@ -433,19 +433,6 @@
                     </div>
                 </div>
                 
-                <div class="success-message" id="successMessage">
-                    ✓ تم إنشاء التطبيق بنجاح! يمكنك الآن تحميل ملفات التطبيق.
-                </div>
-                
-                <div class="error-message" id="errorMessage">
-                    ! يرجى ملء جميع الحقول المطلوبة
-                </div>
-                
-                <div class="loading" id="loadingIndicator">
-                    <div class="loading-spinner"></div>
-                    <p>جاري إنشاء ملفات التطبيق...</p>
-                </div>
-                
                 <div style="width: 100%; margin-top: 20px;">
                     <button class="btn" id="downloadBtn" disabled>تحميل ملفات التطبيق</button>
                     <p style="text-align: center; margin-top: 10px; color: #666; font-size: 0.9rem;">
@@ -456,37 +443,37 @@
         </div>
         
         <section class="instructions">
-            <h2>كيفية استخدام التطبيق بعد التحميل</h2>
+            <h2>كيفية تحويل موقعك إلى تطبيق</h2>
             
             <div class="step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <h3>قم بتحميل الملفات</h3>
-                    <p>بعد تعبئة النموذج، انقر على زر "تحميل ملفات التطبيق" لتحميل ملف ZIP</p>
+                    <h3>أدخل رابط موقعك</h3>
+                    <p>أدخل الرابط الكامل لموقعك الإلكتروني الذي تريد تحويله إلى تطبيق</p>
                 </div>
             </div>
             
             <div class="step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                    <h3>افتح ملف ZIP</h3>
-                    <p>قم بفك ضغط ملف ZIP الذي تم تحميله على جهازك</p>
+                    <h3>قم بتخصيص التطبيق</h3>
+                    <p>اختر اسم التطبيق، الإصدار، أيقونة التطبيق، وشاشة التمهيد حسب رغبتك</p>
                 </div>
             </div>
             
             <div class="step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <h3>ارفع الملفات إلى موقعك</h3>
-                    <p>قم برفع جميع الملفات الموجودة داخل مجلد ZIP إلى الخادم الخاص بموقعك</p>
+                    <h3>أنشئ التطبيق</h3>
+                    <p>انقر على زر "إنشاء التطبيق" لمعاينة النتيجة وتوليد ملفات التطبيق</p>
                 </div>
             </div>
             
             <div class="step">
                 <div class="step-number">4</div>
                 <div class="step-content">
-                    <h3>أضف الرابط إلى موقعك</h3>
-                    <p>أضف رابط ملف index.html إلى موقعك الرئيسي ليتمكن الزوار من تثبيت التطبيق</p>
+                    <h3>قم بتحميل الملفات</h3>
+                    <p>بعد إنشاء التطبيق، قم بتحميل ملفات التطبيق ورفعها إلى خادم موقعك</p>
                 </div>
             </div>
         </section>
@@ -500,7 +487,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // العناصر
+            const form = document.getElementById('appConfigForm');
             const websiteUrl = document.getElementById('websiteUrl');
             const appName = document.getElementById('appName');
             const appVersion = document.getElementById('appVersion');
@@ -508,26 +495,20 @@
             const splashImage = document.getElementById('splashImage');
             const splashText = document.getElementById('splashText');
             const splashDuration = document.getElementById('splashDuration');
-            const createAppBtn = document.getElementById('createAppBtn');
             const downloadBtn = document.getElementById('downloadBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const successMessage = document.getElementById('successMessage');
             
-            // معاينة
             const appNamePreview = document.getElementById('appNamePreview');
             const appHeaderPreview = document.getElementById('appHeaderPreview');
             const splashPreview = document.getElementById('splashPreview');
             const iconPreview = document.getElementById('iconPreview');
             const splashTextPreview = document.getElementById('splashTextPreview');
             
-            // أزرار
             const iconButton = document.getElementById('iconButton');
             const splashButton = document.getElementById('splashButton');
             
-            // رسائل
-            const successMessage = document.getElementById('successMessage');
-            const errorMessage = document.getElementById('errorMessage');
-            const loadingIndicator = document.getElementById('loadingIndicator');
-
-            // تحديث المعاينة
+            // تحديث المعاينة عند تغيير المدخلات
             appName.addEventListener('input', function() {
                 appNamePreview.textContent = this.value || 'اسم التطبيق';
                 appHeaderPreview.textContent = this.value || 'اسم التطبيق';
@@ -560,54 +541,52 @@
                     reader.readAsDataURL(this.files[0]);
                 }
             });
-
-            // زر إنشاء التطبيق
-            createAppBtn.addEventListener('click', function() {
-                // إخفاء جميع الرسائل
-                successMessage.style.display = 'none';
-                errorMessage.style.display = 'none';
-                
-                // التحقق من الحقول المطلوبة
-                if (!websiteUrl.value || !appName.value || !appVersion.value) {
-                    errorMessage.style.display = 'block';
-                    return;
-                }
-                
-                // تفعيل زر التحميل
-                downloadBtn.disabled = false;
-                
-                // إظهار رسالة النجاح
-                successMessage.style.display = 'block';
-                
-                // عرض شاشة التمهيد في المعاينة
-                splashPreview.classList.remove('hidden');
-                
-                // إخفاء شاشة التمهيد بعد المدة المحددة
-                setTimeout(function() {
-                    splashPreview.classList.add('hidden');
-                }, splashDuration.value * 1000);
-            });
-
-            // زر تحميل الملفات
-            downloadBtn.addEventListener('click', function() {
-                if (this.disabled) return;
-                
-                // التحقق من الحقول المطلوبة
-                if (!websiteUrl.value || !appName.value || !appVersion.value) {
-                    errorMessage.style.display = 'block';
-                    return;
-                }
+            
+            // معالجة تقديم النموذج
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
                 
                 // إظهار مؤشر التحميل
                 loadingIndicator.style.display = 'block';
-                this.disabled = true;
+                successMessage.style.display = 'none';
                 
-                // محاكاة عملية التحميل
-                setTimeout(() => {
-                    // إنشاء محتوى الملفات
-                    const manifestContent = JSON.stringify({
+                // محاكاة عملية إنشاء التطبيق
+                setTimeout(function() {
+                    // إخفاء مؤشر التحميل
+                    loadingIndicator.style.display = 'none';
+                    
+                    // تفعيل زر التحميل
+                    downloadBtn.disabled = false;
+                    
+                    // عرض رسالة النجاح
+                    successMessage.style.display = 'block';
+                    
+                    // عرض شاشة التمهيد في المعاينة
+                    splashPreview.classList.remove('hidden');
+                    
+                    // إخفاء شاشة التمهيد بعد المدة المحددة
+                    setTimeout(function() {
+                        splashPreview.classList.add('hidden');
+                    }, splashDuration.value * 1000);
+                }, 2000); // محاكاة وقت معالجة 2 ثانية
+            });
+            
+            // معالجة زر التحميل
+            downloadBtn.addEventListener('click', function() {
+                if (this.disabled) return;
+                
+                // إظهار مؤشر التحميل
+                loadingIndicator.style.display = 'block';
+                
+                // محاكاة عملية إنشاء ملفات التطبيق
+                setTimeout(function() {
+                    // إخفاء مؤشر التحميل
+                    loadingIndicator.style.display = 'none';
+                    
+                    // مثال على إنشاء ملف manifest.json
+                    const manifest = {
                         "name": appName.value,
-                        "short_name": appName.value.substring(0, 12),
+                        "short_name": appName.value,
                         "start_url": websiteUrl.value,
                         "display": "standalone",
                         "background_color": "#ffffff",
@@ -625,144 +604,92 @@
                                 "type": "image/png"
                             }
                         ]
-                    }, null, 2);
-
-                    const serviceWorkerContent = `// Service Worker للتطبيق
-const CACHE_NAME = '${appName.value.replace(/\s+/g, '-').toLowerCase()}-v${appVersion.value}';
-const urlsToCache = [
-  './',
-  './index.html', 
-  './manifest.json'
-];
-
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
-  );
-});`;
-
-                    const indexHtmlContent = `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${appName.value}</title>
-    <meta name="theme-color" content="#4a6fa5">
-    <link rel="manifest" href="manifest.json">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #4a6fa5, #6b8cbc);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            text-align: center;
-        }
-        .container {
-            padding: 20px;
-        }
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto 20px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="loading-spinner"></div>
-        <h2>جاري التوجيه إلى ${appName.value}</h2>
-        <p>إذا لم يتم توجيهك تلقائياً، <a href="${websiteUrl.value}" style="color: white;">انقر هنا</a></p>
-    </div>
-    
-    <script>
-        // تسجيل Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-                .then(function(registration) {
-                    console.log('Service Worker registered with scope:', registration.scope);
-                })
-                .catch(function(error) {
-                    console.log('Service Worker registration failed:', error);
-                });
-        }
-        
-        // التوجيه إلى الموقع بعد ثانيتين
-        setTimeout(function() {
-            window.location.href = '${websiteUrl.value}';
-        }, 2000);
-    </script>
-</body>
-</html>`;
-
-                    const readmeContent = `# تطبيق ${appName.value}
-
-هذا التطبيق تم إنشاؤه باستخدام أداة تحويل المواقع إلى تطبيقات.
-
-## معلومات التطبيق:
-- الإصدار: ${appVersion.value}
-- الرابط المستهدف: ${websiteUrl.value}
-- تم الإنشاء في: ${new Date().toLocaleDateString('ar-EG')}
-
-## كيفية الاستخدام:
-1. قم برفع جميع الملفات إلى خادم الويب الخاص بك
-2. تأكد من أن الخادم يدعم HTTPS (مطلوب لـ PWA)
-3. أضف رابط ملف index.html إلى موقعك الرئيسي`;
-
-                    // إنشاء ملف ZIP افتراضي (في التطبيق الحقيقي سيتم استخدام مكتبة JSZip)
-                    const zipContent = [
-                        {name: 'manifest.json', content: manifestContent},
-                        {name: 'sw.js', content: serviceWorkerContent},
-                        {name: 'index.html', content: indexHtmlContent},
-                        {name: 'README.txt', content: readmeContent}
-                    ];
-
-                    // محاكاة تحميل الملف
-                    const blob = new Blob([JSON.stringify(zipContent)], {type: 'application/zip'});
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${appName.value.replace(/\s+/g, '-')}-pwa.zip`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-
-                    // إخفاء مؤشر التحميل
-                    loadingIndicator.style.display = 'none';
-                    this.disabled = false;
+                    };
                     
-                    alert('تم تحميل ملفات التطبيق بنجاح!');
+                    // إنشاء ملف manifest.json
+                    const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {type: 'application/json'});
+                    const manifestUrl = URL.createObjectURL(manifestBlob);
                     
-                }, 2000);
+                    // إنشاء ملف service worker بسيط
+                    const serviceWorkerContent = `
+                        const CACHE_NAME = '${appName.value}-v${appVersion.value}';
+                        const urlsToCache = [
+                            '/',
+                            '${websiteUrl.value}'
+                        ];
+                        
+                        self.addEventListener('install', function(event) {
+                            event.waitUntil(
+                                caches.open(CACHE_NAME)
+                                    .then(function(cache) {
+                                        return cache.addAll(urlsToCache);
+                                    })
+                            );
+                        });
+                        
+                        self.addEventListener('fetch', function(event) {
+                            event.respondWith(
+                                caches.match(event.request)
+                                    .then(function(response) {
+                                        if (response) {
+                                            return response;
+                                        }
+                                        return fetch(event.request);
+                                    }
+                                )
+                            );
+                        });
+                    `;
+                    
+                    const serviceWorkerBlob = new Blob([serviceWorkerContent], {type: 'application/javascript'});
+                    const serviceWorkerUrl = URL.createObjectURL(serviceWorkerBlob);
+                    
+                    // إنشاء ملف HTML رئيسي
+                    const htmlContent = `
+                        <!DOCTYPE html>
+                        <html lang="ar" dir="rtl">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>${appName.value}</title>
+                            <link rel="manifest" href="manifest.json">
+                            <meta name="theme-color" content="#4a6fa5">
+                        </head>
+                        <body>
+                            <script>
+                                if ('serviceWorker' in navigator) {
+                                    window.addEventListener('load', function() {
+                                        navigator.serviceWorker.register('service-worker.js')
+                                            .then(function(registration) {
+                                                console.log('Service Worker registered with scope:', registration.scope);
+                                            }, function(error) {
+                                                console.log('Service Worker registration failed:', error);
+                                            });
+                                    });
+                                }
+                                
+                                // إعادة التوجيه إلى الموقع الرئيسي
+                                window.location.href = '${websiteUrl.value}';
+                            <\/script>
+                        </body>
+                        </html>
+                    `;
+                    
+                    const htmlBlob = new Blob([htmlContent], {type: 'text/html'});
+                    const htmlUrl = URL.createObjectURL(htmlBlob);
+                    
+                    // إنشاء ملف ZIP افتراضي (في التطبيق الحقيقي، استخدم مكتبة مثل JSZip)
+                    alert('في التطبيق الحقيقي، سيتم هنا إنشاء ملف ZIP يحتوي على:\n- index.html\n- manifest.json\n- service-worker.js\n- أيقونات التطبيق\n\nسيتم تحميل الملف فوراً.');
+                    
+                    console.log('Manifest:', JSON.stringify(manifest, null, 2));
+                    console.log('Service Worker:', serviceWorkerContent);
+                    console.log('HTML:', htmlContent);
+                    
+                    // تحرير الذاكرة
+                    URL.revokeObjectURL(manifestUrl);
+                    URL.revokeObjectURL(serviceWorkerUrl);
+                    URL.revokeObjectURL(htmlUrl);
+                }, 1500); // محاكاة وقت إنشاء الملفات
             });
         });
     </script>
